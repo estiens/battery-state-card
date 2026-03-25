@@ -1,5 +1,6 @@
 import { HomeAssistantExt } from "./type-extensions";
 import { RichStringProcessor } from "./rich-string-processor";
+import { EntityDataAccessor } from "./entity-data-accessor";
 
 /**
  * Action configuration parameters
@@ -18,18 +19,18 @@ export type ActionConfigParams = {
  * @param config Action configuration
  * @param action Action type (tap, hold, double_tap)
  * @param hass Home Assistant instance
- * @param entityData Entity data for KString processing
+ * @param accessor Entity data accessor for KString processing
  */
 export const handleAction = async (
   node: HTMLElement,
   config: ActionConfigParams,
   action: string,
   hass?: HomeAssistantExt,
-  entityData?: IMap<any>,
+  accessor?: EntityDataAccessor,
 ): Promise<void> => {
   // Process KString values in action config if hass is provided
   if (hass) {
-    config = processActionConfig(config, hass, entityData);
+    config = processActionConfig(config, hass, accessor);
   }
 
   fireEvent(node, "hass-action", { config, action });
@@ -39,15 +40,15 @@ export const handleAction = async (
  * Process KString values in action configuration
  * @param config Action configuration to process
  * @param hass Home Assistant instance
- * @param entityData Entity data for KString processing
+ * @param accessor Entity data accessor for KString processing
  * @returns Processed action configuration
  */
 const processActionConfig = (
   config: ActionConfigParams,
   hass: HomeAssistantExt,
-  entityData?: IMap<any>,
+  accessor?: EntityDataAccessor,
 ): ActionConfigParams => {
-  const processor = new RichStringProcessor(hass, entityData);
+  const processor = new RichStringProcessor(hass, accessor);
   const processedConfig = { ...config };
 
   // Process each action type (tap_action, hold_action, double_tap_action)

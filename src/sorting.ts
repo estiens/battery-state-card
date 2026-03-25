@@ -31,10 +31,9 @@ import { isNumber, log, safeGetConfigArrayOfObjects, toNumber } from "./utils";
                     break;
                 default:
                     if ((<string>o.by).startsWith("entity.")) {
-                        const pathChunks = (<string>o.by).split(".");
-                        pathChunks.shift();
-                        valA = pathChunks.reduce((acc, val, i) => acc === undefined ? undefined : acc[val], <any>batteries[idA].entityData);
-                        valB = pathChunks.reduce((acc, val, i) => acc === undefined ? undefined : acc[val], <any>batteries[idB].entityData);
+                        const path = (<string>o.by).substring(7);
+                        valA = batteries[idA].accessor?.resolve(path);
+                        valB = batteries[idB].accessor?.resolve(path);
                     }
                     else {
                         log("Unknown sort field: " + o.by, "warn");

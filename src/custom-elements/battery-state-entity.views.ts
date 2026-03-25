@@ -61,7 +61,7 @@ export const customOrDefaultIcon = (model: BatteryStateEntity) => {
     <ha-state-icon
         style="color: ${model.iconColor}"
         .hass="${model.hass}"
-        .stateObj="${model.entityData}"
+        .stateObj="${model.accessor?.state}"
     ></ha-state-icon>
 </div>
 `;

@@ -1,4 +1,4 @@
-import { getValueFromObject, log, toNumber } from "./utils";
+import { log, toNumber } from "./utils";
 import { IBatteryCollection, IBatteryCollectionItem } from "./battery-provider";
 import { createFilter, Filter } from "./filter";
 
@@ -96,7 +96,7 @@ const expandGroupByConfigs = (config: IGroupConfig[], batteries: IBatteryCollect
         // Discover unique values for this by path
         const uniqueValues = new Set<string>();
         for (const id of sortedIds) {
-            const value = getValueFromObject(batteries[id].entityData, group.by);
+            const value = batteries[id].accessor?.resolve(group.by);
             if (value !== undefined && value !== null && value !== "") {
                 uniqueValues.add(value.toString());
             }
@@ -139,7 +139,7 @@ const getGroupIndex = (config: IGroupConfig[], battery: IBatteryCollectionItem, 
 
         const filters = compiledFilters[index];
         if (filters) {
-            return filters.every(f => f.isValid(battery.entityData, battery.state));
+            return filters.every(f => f.isValid(battery.accessor));
         }
 
         const level = isNaN(toNumber(battery.state)) ? 0 : toNumber(battery.state);

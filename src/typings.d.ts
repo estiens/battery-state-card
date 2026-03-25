@@ -166,20 +166,10 @@ type FilterSpec = IFilter | { not: FilterSpec | FilterSpec[] } | { and: FilterSp
 
 type FilterGroup = { [key in FilterGroupTypes]: FilterSpec[] };
 
-type RegistryDataField = "entity" | "device" | "area" | "siblings";
-
 interface ISiblingEntity {
     entity_id: string;
     device_class?: string;
     state_class?: string;
-}
-
-interface IEntityRegistryCache {
-    entity?: import("./type-extensions").EntityRegistryEntry;
-    device?: import("./type-extensions").DeviceRegistryEntry;
-    area?: import("./type-extensions").AreaRegistryEntry;
-    siblings: ISiblingEntity[];
-    battery_notes?: IMap<any>;
 }
 
 interface IBatteryEntityConfig {

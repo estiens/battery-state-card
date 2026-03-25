@@ -1,5 +1,6 @@
 import { HomeAssistantExt } from "./type-extensions";
 import { log } from "./utils";
+import { EntityDataAccessor } from "./entity-data-accessor";
 
 const validEntityDomains = [
     "automation",
@@ -35,7 +36,7 @@ const validEntityDomains = [
  */
  export class RichStringProcessor {
 
-    constructor(private hass: HomeAssistantExt, private entityData: IMap<any> | undefined) {
+    constructor(private hass: HomeAssistantExt, private accessor: EntityDataAccessor | undefined) {
     }
 
     /**
@@ -83,26 +84,32 @@ const validEntityDomains = [
         }
 
         const chunks = dataSource.split(".");
-        let data = { ...<any>this.entityData };
 
+        // Cross-entity lookup (e.g., sensor.some_entity.attributes.brightness)
         if (validEntityDomains.includes(chunks[0])) {
-            data = {
-                ...this.hass.states[chunks.splice(0, 2).join(".")]
-            };
-        }
-
-        for (let i = 0; i < chunks.length; i++) {
-            data = data[chunks[i]];
-            if (data === undefined) {
-                break;
+            let data: any = this.hass.states[chunks.splice(0, 2).join(".")];
+            for (let i = 0; i < chunks.length; i++) {
+                data = data?.[chunks[i]];
+                if (data === undefined) {
+                    break;
+                }
             }
+            if (typeof data == "object") {
+                data = JSON.stringify(data);
+            }
+            return data === undefined ? undefined : data.toString();
         }
 
-        if (typeof data == "object") {
-            data = JSON.stringify(data);
+        // Use accessor for current entity data
+        if (this.accessor) {
+            let data = this.accessor.resolve(dataSource);
+            if (typeof data == "object") {
+                data = JSON.stringify(data);
+            }
+            return data === undefined ? undefined : data.toString();
         }
 
-        return data === undefined ? undefined : data.toString();
+        return undefined;
     }
 }
 

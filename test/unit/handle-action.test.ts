@@ -9,7 +9,6 @@ describe("handleAction", () => {
         test("processes navigation_path with entity attributes", () => {
             const hassMock = new HomeAssistantMock<BatteryStateEntity>(true);
             const sensor = hassMock.addEntity("Battery Sensor", "50", { device_id: "abc123" }, "sensor");
-            const entityData = hassMock.hass.states[sensor.entity_id];
 
             const node = document.createElement("div");
             let firedEvent: any = null;
@@ -28,7 +27,7 @@ describe("handleAction", () => {
                 },
                 "tap",
                 hassMock.hass,
-                entityData
+                hassMock.createAccessor(sensor.entity_id)
             );
 
             expect(firedEvent).not.toBeNull();
@@ -38,7 +37,6 @@ describe("handleAction", () => {
         test("processes navigation_path with entity state", () => {
             const hassMock = new HomeAssistantMock<BatteryStateEntity>(true);
             const sensor = hassMock.addEntity("Battery Sensor", "50", {}, "sensor");
-            const entityData = hassMock.hass.states[sensor.entity_id];
 
             const node = document.createElement("div");
             let firedEvent: any = null;
@@ -57,7 +55,7 @@ describe("handleAction", () => {
                 },
                 "tap",
                 hassMock.hass,
-                entityData
+                hassMock.createAccessor(sensor.entity_id)
             );
 
             expect(firedEvent).not.toBeNull();
@@ -67,7 +65,6 @@ describe("handleAction", () => {
         test("processes url_path with KString", () => {
             const hassMock = new HomeAssistantMock<BatteryStateEntity>(true);
             const sensor = hassMock.addEntity("Battery Sensor", "50", { device_name: "MyDevice" }, "sensor");
-            const entityData = hassMock.hass.states[sensor.entity_id];
 
             const node = document.createElement("div");
             let firedEvent: any = null;
@@ -86,7 +83,7 @@ describe("handleAction", () => {
                 },
                 "tap",
                 hassMock.hass,
-                entityData
+                hassMock.createAccessor(sensor.entity_id)
             );
 
             expect(firedEvent).not.toBeNull();
@@ -96,7 +93,6 @@ describe("handleAction", () => {
         test("processes service name with KString", () => {
             const hassMock = new HomeAssistantMock<BatteryStateEntity>(true);
             const sensor = hassMock.addEntity("Battery Sensor", "on", {}, "sensor");
-            const entityData = hassMock.hass.states[sensor.entity_id];
 
             const node = document.createElement("div");
             let firedEvent: any = null;
@@ -115,7 +111,7 @@ describe("handleAction", () => {
                 },
                 "tap",
                 hassMock.hass,
-                entityData
+                hassMock.createAccessor(sensor.entity_id)
             );
 
             expect(firedEvent).not.toBeNull();
@@ -125,7 +121,6 @@ describe("handleAction", () => {
         test("processes service_data with KString in nested values", () => {
             const hassMock = new HomeAssistantMock<BatteryStateEntity>(true);
             const sensor = hassMock.addEntity("Battery Sensor", "50", { device_id: "abc123" }, "sensor");
-            const entityData = hassMock.hass.states[sensor.entity_id];
 
             const node = document.createElement("div");
             let firedEvent: any = null;
@@ -151,7 +146,7 @@ describe("handleAction", () => {
                 },
                 "tap",
                 hassMock.hass,
-                entityData
+                hassMock.createAccessor(sensor.entity_id)
             );
 
             expect(firedEvent).not.toBeNull();
@@ -163,7 +158,6 @@ describe("handleAction", () => {
         test("processes data field with KString", () => {
             const hassMock = new HomeAssistantMock<BatteryStateEntity>(true);
             const sensor = hassMock.addEntity("Battery Sensor", "25", {}, "sensor");
-            const entityData = hassMock.hass.states[sensor.entity_id];
 
             const node = document.createElement("div");
             let firedEvent: any = null;
@@ -185,7 +179,7 @@ describe("handleAction", () => {
                 },
                 "tap",
                 hassMock.hass,
-                entityData
+                hassMock.createAccessor(sensor.entity_id)
             );
 
             expect(firedEvent).not.toBeNull();
@@ -195,7 +189,6 @@ describe("handleAction", () => {
         test("processes target field with KString", () => {
             const hassMock = new HomeAssistantMock<BatteryStateEntity>(true);
             const sensor = hassMock.addEntity("Battery Sensor", "50", { target_entity: "light.bedroom" }, "sensor");
-            const entityData = hassMock.hass.states[sensor.entity_id];
 
             const node = document.createElement("div");
             let firedEvent: any = null;
@@ -217,7 +210,7 @@ describe("handleAction", () => {
                 },
                 "tap",
                 hassMock.hass,
-                entityData
+                hassMock.createAccessor(sensor.entity_id)
             );
 
             expect(firedEvent).not.toBeNull();
@@ -227,7 +220,6 @@ describe("handleAction", () => {
         test("processes array values in service_data", () => {
             const hassMock = new HomeAssistantMock<BatteryStateEntity>(true);
             const sensor = hassMock.addEntity("Battery Sensor", "50", {}, "sensor");
-            const entityData = hassMock.hass.states[sensor.entity_id];
 
             const node = document.createElement("div");
             let firedEvent: any = null;
@@ -249,7 +241,7 @@ describe("handleAction", () => {
                 },
                 "tap",
                 hassMock.hass,
-                entityData
+                hassMock.createAccessor(sensor.entity_id)
             );
 
             expect(firedEvent).not.toBeNull();
@@ -260,7 +252,6 @@ describe("handleAction", () => {
         test("processes hold_action with KString", () => {
             const hassMock = new HomeAssistantMock<BatteryStateEntity>(true);
             const sensor = hassMock.addEntity("Battery Sensor", "50", { device_id: "xyz789" }, "sensor");
-            const entityData = hassMock.hass.states[sensor.entity_id];
 
             const node = document.createElement("div");
             let firedEvent: any = null;
@@ -279,7 +270,7 @@ describe("handleAction", () => {
                 },
                 "hold",
                 hassMock.hass,
-                entityData
+                hassMock.createAccessor(sensor.entity_id)
             );
 
             expect(firedEvent).not.toBeNull();
@@ -289,7 +280,6 @@ describe("handleAction", () => {
         test("processes double_tap_action with KString", () => {
             const hassMock = new HomeAssistantMock<BatteryStateEntity>(true);
             const sensor = hassMock.addEntity("Battery Sensor", "50", { device_id: "xyz789" }, "sensor");
-            const entityData = hassMock.hass.states[sensor.entity_id];
 
             const node = document.createElement("div");
             let firedEvent: any = null;
@@ -308,7 +298,7 @@ describe("handleAction", () => {
                 },
                 "double_tap",
                 hassMock.hass,
-                entityData
+                hassMock.createAccessor(sensor.entity_id)
             );
 
             expect(firedEvent).not.toBeNull();
@@ -332,18 +322,15 @@ describe("handleAction", () => {
                     }
                 },
                 "tap"
-                // No hass parameter
             );
 
             expect(firedEvent).not.toBeNull();
-            // Should keep the original KString pattern
             expect(firedEvent.detail.config.tap_action.navigation_path).toBe("/device/{attributes.device_id}");
         });
 
         test("handles string action config without processing", () => {
             const hassMock = new HomeAssistantMock<BatteryStateEntity>(true);
             const sensor = hassMock.addEntity("Battery Sensor", "50", {}, "sensor");
-            const entityData = hassMock.hass.states[sensor.entity_id];
 
             const node = document.createElement("div");
             let firedEvent: any = null;
@@ -355,15 +342,14 @@ describe("handleAction", () => {
                 node,
                 {
                     entity: sensor.entity_id,
-                    tap_action: "more-info" // String action, not an object
+                    tap_action: "more-info"
                 },
                 "tap",
                 hassMock.hass,
-                entityData
+                hassMock.createAccessor(sensor.entity_id)
             );
 
             expect(firedEvent).not.toBeNull();
-            // String actions stay as strings since processActionProperties only processes objects
             expect(firedEvent.detail.config.tap_action).toBe("more-info");
         });
 
@@ -371,7 +357,6 @@ describe("handleAction", () => {
             const hassMock = new HomeAssistantMock<BatteryStateEntity>(true);
             const sensor = hassMock.addEntity("Battery Sensor", "50", { device_id: "abc123" }, "sensor");
             const otherSensor = hassMock.addEntity("Other Sensor", "active", {}, "sensor");
-            const entityData = hassMock.hass.states[sensor.entity_id];
 
             const node = document.createElement("div");
             let firedEvent: any = null;
@@ -390,7 +375,7 @@ describe("handleAction", () => {
                 },
                 "tap",
                 hassMock.hass,
-                entityData
+                hassMock.createAccessor(sensor.entity_id)
             );
 
             expect(firedEvent).not.toBeNull();
@@ -400,7 +385,6 @@ describe("handleAction", () => {
         test("processes KString with processing functions", () => {
             const hassMock = new HomeAssistantMock<BatteryStateEntity>(true);
             const sensor = hassMock.addEntity("Battery Sensor", "50.789", {}, "sensor");
-            const entityData = hassMock.hass.states[sensor.entity_id];
 
             const node = document.createElement("div");
             let firedEvent: any = null;
@@ -422,7 +406,7 @@ describe("handleAction", () => {
                 },
                 "tap",
                 hassMock.hass,
-                entityData
+                hassMock.createAccessor(sensor.entity_id)
             );
 
             expect(firedEvent).not.toBeNull();

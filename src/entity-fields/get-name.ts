@@ -1,6 +1,7 @@
 import { HomeAssistantExt } from "../type-extensions";
 import { getRegexFromString, safeGetArray } from "../utils";
 import { RichStringProcessor } from "../rich-string-processor";
+import { EntityDataAccessor } from "../entity-data-accessor";
 
 
 /**
@@ -9,13 +10,13 @@ import { RichStringProcessor } from "../rich-string-processor";
  * @param hass HomeAssistant state object
  * @returns Battery name
  */
-export const getName = (config: IBatteryEntityConfig, hass: HomeAssistantExt, entityData: IMap<any>): string => {
+export const getName = (config: IBatteryEntityConfig, hass: HomeAssistantExt, accessor: EntityDataAccessor): string => {
     if (config.name) {
-        const proc = new RichStringProcessor(hass, entityData);
+        const proc = new RichStringProcessor(hass, accessor);
         return proc.process(config.name);
     }
 
-    let name = entityData.attributes.friendly_name;
+    let name = accessor.attributes?.friendly_name;
 
     // when we have failed to get the name we just return entity id
     if (!name) {

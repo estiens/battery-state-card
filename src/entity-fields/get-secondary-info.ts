@@ -1,6 +1,7 @@
 import { HomeAssistantExt } from "../type-extensions";
 import { RichStringProcessor } from "../rich-string-processor";
 import { isNumber } from "../utils";
+import { EntityDataAccessor } from "../entity-data-accessor";
 
 /**
  * Gets secondary info text
@@ -9,9 +10,9 @@ import { isNumber } from "../utils";
  * @param entidyData Entity data
  * @returns Secondary info text
  */
-export const getSecondaryInfo = (config: IBatteryEntityConfig, hass: HomeAssistantExt, entityData: IMap<any> | undefined): string => {
+export const getSecondaryInfo = (config: IBatteryEntityConfig, hass: HomeAssistantExt, accessor: EntityDataAccessor | undefined): string => {
     if (config.secondary_info) {
-        const processor = new RichStringProcessor(hass, entityData);
+        const processor = new RichStringProcessor(hass, accessor);
 
         let result = processor.process(config.secondary_info);
 

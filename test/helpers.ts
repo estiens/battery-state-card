@@ -3,6 +3,7 @@ import { BatteryStateEntity } from "../src/custom-elements/battery-state-entity"
 import { LovelaceCard } from "../src/custom-elements/lovelace-card";
 import { DeviceRegistryEntry, EntityRegistryEntry, HomeAssistantExt, AreaRegistryEntry } from "../src/type-extensions";
 import { throttledCall } from "../src/utils";
+import { EntityDataAccessor } from "../src/entity-data-accessor";
 
 /**
  * Removing all custome elements
@@ -161,6 +162,9 @@ export class HomeAssistantMock<T extends LovelaceCard<any>> {
 
     public hass: HomeAssistantExt = <any>{
         states: {},
+        entities: {},
+        devices: {},
+        areas: {},
         localize: (...data: string[]) => `[${data.join(", ")}]`,
         formatEntityState: (entityData: any) => `${entityData.state} %`,
     };
@@ -197,8 +201,9 @@ export class HomeAssistantMock<T extends LovelaceCard<any>> {
     }
 
     addEntity(name: string, state?: string, attribs?: IEntityAttributes, domain?: string): IEntityMock {
+        const entityId = convertoToEntityId(name, domain);
         const entity = {
-            entity_id: convertoToEntityId(name, domain),
+            entity_id: entityId,
             state: state || "",
             attributes: {
                 friendly_name: name,
@@ -243,6 +248,10 @@ export class HomeAssistantMock<T extends LovelaceCard<any>> {
         this.hass.states[entity.entity_id] = entity;
 
         return entity
+    }
+
+    createAccessor(entityId: string): EntityDataAccessor {
+        return new EntityDataAccessor(this.hass, entityId);
     }
 }
 

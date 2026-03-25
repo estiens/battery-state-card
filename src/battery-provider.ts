@@ -2,7 +2,7 @@ import { log, safeGetConfigArrayOfObjects } from "./utils";
 import { BatteryStateEntity } from "./custom-elements/battery-state-entity";
 import { createFilter, Filter } from "./filter";
 import { HomeAssistantExt } from "./type-extensions";
-import { BATTERY_NOTES_PLATFORM, hassRegistryCache } from "./hass-registry-cache";
+import { EntityDataAccessor } from "./entity-data-accessor";
 
 /**
  * Properties which should be copied over to individual entities from the card
@@ -176,18 +176,6 @@ export class BatteryProvider {
             return;
         }
 
-        const advancedInclude = this.include.some(filter => filter.is_advanced);
-        const filterBatteryNotes = this.config.battery_notes_enabled !== false;
-
-        // Collect required registry fields from include filters, we do it to optimize the initialization stage by fetching only necessary data
-        const requiredFields = advancedInclude
-            ? [...new Set(
-                this.include
-                    .filter(f => f.requiredFields)
-                    .reduce((acc, f) => [...acc, ...f.requiredFields!], [] as RegistryDataField[])
-              )]
-            : undefined;
-
         Object.keys(hass.states).forEach(entityId => {
 
             if (this.batteries[entityId]) {
@@ -195,29 +183,10 @@ export class BatteryProvider {
                 return;
             }
 
-            let entityData = <IMap<any>>{};
-            if (advancedInclude) {
-                entityData = { ...hass.states[entityId] };
-                // getting "partial" extended data based on filters requirements
-                const extData = hassRegistryCache.getExtendedData(hass, entityId, requiredFields);
-                if (extData.entity) {
-                    entityData["entity"] = extData.entity;
-                    entityData["device"] = extData.device;
-                    entityData["area"] = extData.area;
-                }
-            }
+            const accessor = new EntityDataAccessor(hass, entityId);
 
             // check if entity matches filter conditions
-            if (this.include!.some(filter => filter.isValid(advancedInclude ? entityData : hass.states[entityId]))) {
-
-                // Filter out battery_notes entities (duplicates created by the integration)
-                if (filterBatteryNotes) {
-                    const entityEntry = hassRegistryCache.getEntity(hass, entityId);
-                    if (entityEntry?.platform === BATTERY_NOTES_PLATFORM) {
-                        return;
-                    }
-                }
-
+            if (this.include!.some(filter => filter.isValid(accessor))) {
                 this.batteries[entityId] = this.createBattery({ entity: entityId });
             }
         });
@@ -297,7 +266,7 @@ export class BatteryProvider {
             let isHidden = false;
             for (let filter of filters) {
                 // we want to show batteries for which entities are missing in HA
-                if (filter.isValid(battery.entityData, battery.state)) {
+                if (filter.isValid(battery.accessor)) {
                     if (filter.is_permanent) {
                         // permanent filters have conditions based on static values so we can safely
                         // remove such battery to avoid updating them unnecessarily
