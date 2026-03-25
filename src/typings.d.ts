@@ -166,20 +166,10 @@ type FilterSpec = IFilter | { not: FilterSpec | FilterSpec[] } | { and: FilterSp
 
 type FilterGroup = { [key in FilterGroupTypes]: FilterSpec[] };
 
-type RegistryDataField = "entity" | "device" | "area" | "siblings";
-
 interface ISiblingEntity {
     entity_id: string;
     device_class?: string;
     state_class?: string;
-}
-
-interface IEntityRegistryCache {
-    entity?: import("./type-extensions").EntityRegistryEntry;
-    device?: import("./type-extensions").DeviceRegistryEntry;
-    area?: import("./type-extensions").AreaRegistryEntry;
-    siblings: ISiblingEntity[];
-    battery_notes?: IMap<any>;
 }
 
 interface IBatteryEntityConfig {
@@ -290,9 +280,10 @@ interface IBatteryEntityConfig {
     style?: string,
 
     /**
-     * Whether to use battery_notes integration data (filter duplicates, add attributes)
+     * Whether to deduplicate battery_notes entities per device (prefer battery_plus over original).
+     * Defaults to true when not specified.
      */
-    battery_notes_enabled?: boolean;
+    battery_notes_dedup?: boolean;
 }
 
 interface IBatteryCardConfig {
@@ -376,7 +367,7 @@ interface IGroupConfig {
      */
     filters?: FilterSpec[];
     /**
-     * Property path to automatically create sub-groups by (e.g. "area.name", "battery_notes.attributes.battery_type")
+     * Property path to automatically create sub-groups by (e.g. "area.name", "attributes.battery_type")
      */
     by?: string;
 }
