@@ -1,6 +1,6 @@
 {
   "name": "battery-state-card",
-  "version": "4.0.1",
+  "version": "4.1.0-beta.0",
   "description": "Battery State card for Home Assistant",
   "main": "dist/battery-state-card.js",
   "type": "module",
