@@ -148,7 +148,7 @@ export class BatteryStateEntity extends LovelaceCard<IBatteryEntityConfig> {
 
         const isCharging = getChargingState(this.config, this.state, this.hass!, siblings);
         const chargingText = this.config.charging_state?.secondary_info_text || "Charging"; // todo: think about i18n
-        const processor = new RichStringProcessor(this.hass!, this.accessor);
+        const processor = new RichStringProcessor(this.accessor);
         this.accessor.setComputed("charging", {
             text: isCharging ? processor.process(chargingText) : "",
             is_active: isCharging,
@@ -163,9 +163,9 @@ export class BatteryStateEntity extends LovelaceCard<IBatteryEntityConfig> {
             }
         }
 
-        this.name = getName(this.config, this.hass!, this.accessor);
-        this.secondaryInfo = getSecondaryInfo(this.config, this.hass!, this.accessor);
-        this.icon = getIcon(this.config, level, isCharging, this.hass!, this.accessor);
+        this.name = getName(this.config, this.accessor);
+        this.secondaryInfo = getSecondaryInfo(this.config, this.accessor);
+        this.icon = getIcon(this.config, level, isCharging, this.accessor);
         this.iconColor = getColorForBatteryLevel(this.config, level, isCharging);
         this.dynamicStyles = this.config.style || "";
     }
@@ -220,7 +220,6 @@ export class BatteryStateEntity extends LovelaceCard<IBatteryEntityConfig> {
                             tap_action: safeGetConfigObject(tapAction!, "action"),
                         },
                         "tap",
-                        this.hass,
                         this.accessor,
                     );
                 }

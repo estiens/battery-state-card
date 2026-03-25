@@ -1,6 +1,8 @@
 import { IBatteryCollection, IBatteryCollectionItem } from "../../src/battery-provider";
 import { getIdsOfSortedBatteries } from "../../src/sorting";
 import { convertoToEntityId } from "../helpers";
+import { EntityDataAccessor } from "../../src/entity-data-accessor";
+import { HomeAssistantExt } from "../../src/type-extensions";
 
 describe("Entity sorting", () => {
 
@@ -98,14 +100,23 @@ describe("Entity sorting", () => {
     });
 });
 
+const mockHass: HomeAssistantExt = <any>{ states: {}, entities: {}, devices: {}, areas: {} };
+
 const createBattery = (name: string, state: string | undefined, last_changed?: string | undefined) => {
+    const entityId = convertoToEntityId(name);
+    const stateData: any = {
+        entity_id: entityId,
+        state: state,
+        attributes: { friendly_name: name },
+        last_changed: last_changed?.substring(1, last_changed.length - 2),
+    };
+    mockHass.states[entityId] = stateData;
+
     const b = <IBatteryCollectionItem><any>{
-        entityId: convertoToEntityId(name),
+        entityId: entityId,
         name: name,
         state: state,
-        entityData: {
-            "last_changed": last_changed?.substring(1,last_changed.length - 2),
-        }
+        accessor: new EntityDataAccessor(mockHass, entityId),
     }
 
     return b;

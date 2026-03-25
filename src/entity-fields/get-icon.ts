@@ -1,4 +1,3 @@
-import { HomeAssistantExt } from "../type-extensions";
 import { log } from "../utils";
 import { RichStringProcessor } from "../rich-string-processor";
 import { EntityDataAccessor } from "../entity-data-accessor";
@@ -18,7 +17,7 @@ export const DefaultIcon = "<default_icon>";
  * @param hass HomeAssistant state object
  * @returns Mdi icon string
  */
-export const getIcon = (config: IBatteryEntityConfig, level: number | undefined, isCharging: boolean, hass: HomeAssistantExt, accessor: EntityDataAccessor): string => {
+export const getIcon = (config: IBatteryEntityConfig, level: number | undefined, isCharging: boolean, accessor: EntityDataAccessor): string => {
     if (isCharging && config.charging_state?.icon) {
         return config.charging_state.icon;
     }
@@ -48,7 +47,7 @@ export const getIcon = (config: IBatteryEntityConfig, level: number | undefined,
             return val;
         }
 
-        const processor = new RichStringProcessor(hass, accessor);
+        const processor = new RichStringProcessor(accessor);
         return processor.process(config.icon);
     }
 

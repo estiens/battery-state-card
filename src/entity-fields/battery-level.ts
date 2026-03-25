@@ -25,7 +25,7 @@ export const getBatteryLevel = (config: IBatteryEntityConfig, hass: HomeAssistan
     let state: string;
     let unit: string | undefined;
 
-    const stringProcessor = new RichStringProcessor(hass, accessor);
+    const stringProcessor = new RichStringProcessor(accessor);
 
     if (config.value_override !== undefined) {
         const processedValue = stringProcessor.process(config.value_override.toString());

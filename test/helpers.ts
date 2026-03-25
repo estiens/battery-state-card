@@ -166,7 +166,7 @@ export class HomeAssistantMock<T extends LovelaceCard<any>> {
         devices: {},
         areas: {},
         localize: (...data: string[]) => `[${data.join(", ")}]`,
-        formatEntityState: (entityData: any) => `${entityData.state} %`,
+        formatEntityState: (entityData: any, state?: string) => `${state ?? entityData.state} %`,
     };
 
     private throttledUpdate = throttledCall(() => {
@@ -240,7 +240,23 @@ export class HomeAssistantMock<T extends LovelaceCard<any>> {
                 this.throttledUpdate();
             },
             setProperty: <K extends keyof HaEntityPropertyToTypeMap>(name: K, val: HaEntityPropertyToTypeMap[K]) => {
-                (<any>entity)[name] = val;
+                if (name === "entity") {
+                    this.hass.entities![entity.entity_id] = <any>{ ...val, entity_id: entity.entity_id };
+                } else if (name === "device") {
+                    const deviceId = (<any>val).id || "mock_device";
+                    this.hass.devices![deviceId] = <any>val;
+                    if (!this.hass.entities![entity.entity_id]) {
+                        this.hass.entities![entity.entity_id] = <any>{ entity_id: entity.entity_id };
+                    }
+                    (<any>this.hass.entities![entity.entity_id]).device_id = deviceId;
+                } else if (name === "area") {
+                    const areaId = (<any>val).area_id || "mock_area";
+                    this.hass.areas![areaId] = <any>val;
+                    if (!this.hass.entities![entity.entity_id]) {
+                        this.hass.entities![entity.entity_id] = <any>{ entity_id: entity.entity_id };
+                    }
+                    (<any>this.hass.entities![entity.entity_id]).area_id = areaId;
+                }
                 this.throttledUpdate();
             }
         };

@@ -1,4 +1,3 @@
-import { HomeAssistantExt } from "../type-extensions";
 import { getRegexFromString, safeGetArray } from "../utils";
 import { RichStringProcessor } from "../rich-string-processor";
 import { EntityDataAccessor } from "../entity-data-accessor";
@@ -7,12 +6,11 @@ import { EntityDataAccessor } from "../entity-data-accessor";
 /**
  * Battery name getter
  * @param config Entity config
- * @param hass HomeAssistant state object
  * @returns Battery name
  */
-export const getName = (config: IBatteryEntityConfig, hass: HomeAssistantExt, accessor: EntityDataAccessor): string => {
+export const getName = (config: IBatteryEntityConfig, accessor: EntityDataAccessor): string => {
     if (config.name) {
-        const proc = new RichStringProcessor(hass, accessor);
+        const proc = new RichStringProcessor(accessor);
         return proc.process(config.name);
     }
 

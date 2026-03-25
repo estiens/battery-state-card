@@ -5,7 +5,7 @@ import { EntityDataAccessor } from "../../../src/entity-data-accessor";
 describe("Get icon", () => {
     test("charging and charging icon set in config", () => {
         const hassMock = new HomeAssistantMock(true);
-        let icon = getIcon({ entity: "", charging_state: { icon: "mdi:custom" } }, 20, true, hassMock.hass, new EntityDataAccessor(hassMock.hass, ""));
+        let icon = getIcon({ entity: "", charging_state: { icon: "mdi:custom" } }, 20, true, new EntityDataAccessor(hassMock.hass, ""));
         expect(icon).toBe("mdi:custom");
     });
 
@@ -15,7 +15,7 @@ describe("Get icon", () => {
         [NaN],
     ])("returns unknown state icon when invalid state passed", (invalidEntityState: number) => {
         const hassMock = new HomeAssistantMock(true);
-        let icon = getIcon({ entity: "" }, invalidEntityState, false, hassMock.hass, new EntityDataAccessor(hassMock.hass, ""));
+        let icon = getIcon({ entity: "" }, invalidEntityState, false, new EntityDataAccessor(hassMock.hass, ""));
         expect(icon).toBe("mdi:battery-unknown");
     });
 
@@ -42,7 +42,7 @@ describe("Get icon", () => {
         [100, true, "mdi:battery-charging-100"],
     ])("returns correct state icon", (batteryLevel: number, isCharging: boolean, expectedIcon: string) => {
         const hassMock = new HomeAssistantMock(true);
-        let icon = getIcon({ entity: "" }, batteryLevel, isCharging, hassMock.hass, new EntityDataAccessor(hassMock.hass, ""));
+        let icon = getIcon({ entity: "" }, batteryLevel, isCharging, new EntityDataAccessor(hassMock.hass, ""));
         expect(icon).toBe(expectedIcon);
     });
 
@@ -51,7 +51,7 @@ describe("Get icon", () => {
         const hassMock = new HomeAssistantMock();
         hassMock.addEntity("Battery state", "45");
 
-        let icon = getIcon({ entity: "battery_state", icon: "mdi:custom" }, 20, false, hassMock.hass, hassMock.createAccessor("battery_state"));
+        let icon = getIcon({ entity: "battery_state", icon: "mdi:custom" }, 20, false, hassMock.createAccessor("battery_state"));
         expect(icon).toBe("mdi:custom");
     });
 
@@ -66,7 +66,7 @@ describe("Get icon", () => {
         const hassMock = new HomeAssistantMock();
         hassMock.addEntity("Battery state", state);
 
-        let icon = getIcon({ entity: "battery_state", icon: configuredIcon }, Number(state), false, hassMock.hass, hassMock.createAccessor("battery_state"));
+        let icon = getIcon({ entity: "battery_state", icon: configuredIcon }, Number(state), false, hassMock.createAccessor("battery_state"));
         expect(icon).toBe(expectedResult);
     })
 
@@ -74,7 +74,7 @@ describe("Get icon", () => {
         const hassMock = new HomeAssistantMock();
         hassMock.addEntity("Battery state", "45", { icon: "mdi:attribute-icon" });
 
-        let icon = getIcon({ entity: "battery_state", icon: "attribute.icon" }, 45, false, hassMock.hass, hassMock.createAccessor("battery_state"));
+        let icon = getIcon({ entity: "battery_state", icon: "attribute.icon" }, 45, false, hassMock.createAccessor("battery_state"));
         expect(icon).toBe("mdi:attribute-icon");
     })
 
@@ -82,7 +82,7 @@ describe("Get icon", () => {
         const hassMock = new HomeAssistantMock();
         hassMock.addEntity("Battery state", "45", { icon: "mdi:attribute-icon" });
 
-        let icon = getIcon({ entity: "battery_state", icon: "attribute.icon_non_existing" }, 45, false, hassMock.hass, hassMock.createAccessor("battery_state"));
+        let icon = getIcon({ entity: "battery_state", icon: "attribute.icon_non_existing" }, 45, false, hassMock.createAccessor("battery_state"));
         expect(icon).toBe("mdi:battery-unknown");
     })
 
@@ -90,7 +90,7 @@ describe("Get icon", () => {
         const hassMock = new HomeAssistantMock();
         hassMock.addEntity("Battery state", "45");
 
-        let icon = getIcon({ entity: "battery_state", icon: null }, 45, false, hassMock.hass, hassMock.createAccessor("battery_state"));
+        let icon = getIcon({ entity: "battery_state", icon: null }, 45, false, hassMock.createAccessor("battery_state"));
         expect(icon).toBe("<default_icon>");
     })
 
@@ -98,7 +98,7 @@ describe("Get icon", () => {
         const hassMock = new HomeAssistantMock();
         hassMock.addEntity("Battery state", "45");
 
-        let icon = getIcon({ entity: "battery_state", icon: null }, 45, false, hassMock.hass, hassMock.createAccessor("battery_state"));
+        let icon = getIcon({ entity: "battery_state", icon: null }, 45, false, hassMock.createAccessor("battery_state"));
         expect(icon).toBe("<default_icon>");
     })
 
@@ -106,7 +106,7 @@ describe("Get icon", () => {
         const hassMock = new HomeAssistantMock();
         hassMock.addEntity("Battery state", "45");
 
-        let icon = getIcon({ entity: "battery_state", icon: "mdi:custom-override" }, 45, false, hassMock.hass, hassMock.createAccessor("battery_state"));
+        let icon = getIcon({ entity: "battery_state", icon: "mdi:custom-override" }, 45, false, hassMock.createAccessor("battery_state"));
         expect(icon).toBe("mdi:custom-override");
     })
 });

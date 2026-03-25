@@ -1,19 +1,45 @@
 import { IBatteryCollection, IBatteryCollectionItem } from "../../src/battery-provider";
 import { getBatteryGroups } from "../../src/grouping";
 import { convertoToEntityId } from "../helpers";
+import { EntityDataAccessor } from "../../src/entity-data-accessor";
+import { HomeAssistantExt } from "../../src/type-extensions";
+
+let areaCounter = 0;
+const mockHass: HomeAssistantExt = <any>{ states: {}, entities: {}, devices: {}, areas: {} };
 
 const createBattery = (name: string, state: string, entityData?: IMap<any>, extraProps?: Partial<IBatteryCollectionItem>): IBatteryCollectionItem => {
     const id = convertoToEntityId(name);
+
+    // Build state object from entityData, but handle special accessor prefixes
+    const stateData: any = {
+        entity_id: id,
+        state: state,
+        attributes: { friendly_name: name },
+    };
+
+    if (entityData) {
+        // Set up area registry if area data is provided
+        if (entityData.area) {
+            const areaId = entityData.area.name ? `area_${entityData.area.name.toString().toLowerCase().replace(/\s/g, "_")}` : `area_${++areaCounter}`;
+            mockHass.areas![areaId] = { area_id: areaId, name: entityData.area.name, picture: null, aliases: [] };
+            mockHass.entities![id] = <any>{ entity_id: id, area_id: areaId };
+        }
+
+        // Copy remaining entityData to state (for paths like battery_notes.*)
+        for (const key of Object.keys(entityData)) {
+            if (key !== "area") {
+                stateData[key] = entityData[key];
+            }
+        }
+    }
+
+    mockHass.states[id] = stateData;
+
     return <IBatteryCollectionItem><any>{
         entityId: id,
         name: name,
         state: state,
-        entityData: {
-            entity_id: id,
-            state: state,
-            attributes: { friendly_name: name },
-            ...entityData,
-        },
+        accessor: new EntityDataAccessor(mockHass, id),
         ...extraProps,
     };
 }

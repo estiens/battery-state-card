@@ -26,7 +26,6 @@ describe("handleAction", () => {
                     }
                 },
                 "tap",
-                hassMock.hass,
                 hassMock.createAccessor(sensor.entity_id)
             );
 
@@ -54,7 +53,6 @@ describe("handleAction", () => {
                     }
                 },
                 "tap",
-                hassMock.hass,
                 hassMock.createAccessor(sensor.entity_id)
             );
 
@@ -82,7 +80,6 @@ describe("handleAction", () => {
                     }
                 },
                 "tap",
-                hassMock.hass,
                 hassMock.createAccessor(sensor.entity_id)
             );
 
@@ -110,7 +107,6 @@ describe("handleAction", () => {
                     }
                 },
                 "tap",
-                hassMock.hass,
                 hassMock.createAccessor(sensor.entity_id)
             );
 
@@ -145,7 +141,6 @@ describe("handleAction", () => {
                     }
                 },
                 "tap",
-                hassMock.hass,
                 hassMock.createAccessor(sensor.entity_id)
             );
 
@@ -178,7 +173,6 @@ describe("handleAction", () => {
                     }
                 },
                 "tap",
-                hassMock.hass,
                 hassMock.createAccessor(sensor.entity_id)
             );
 
@@ -209,7 +203,6 @@ describe("handleAction", () => {
                     }
                 },
                 "tap",
-                hassMock.hass,
                 hassMock.createAccessor(sensor.entity_id)
             );
 
@@ -240,7 +233,6 @@ describe("handleAction", () => {
                     }
                 },
                 "tap",
-                hassMock.hass,
                 hassMock.createAccessor(sensor.entity_id)
             );
 
@@ -269,7 +261,6 @@ describe("handleAction", () => {
                     }
                 },
                 "hold",
-                hassMock.hass,
                 hassMock.createAccessor(sensor.entity_id)
             );
 
@@ -297,7 +288,6 @@ describe("handleAction", () => {
                     }
                 },
                 "double_tap",
-                hassMock.hass,
                 hassMock.createAccessor(sensor.entity_id)
             );
 
@@ -305,7 +295,7 @@ describe("handleAction", () => {
             expect(firedEvent.detail.config.double_tap_action.navigation_path).toBe("/info/xyz789");
         });
 
-        test("does not process when hass is not provided", () => {
+        test("does not process when accessor is not provided", () => {
             const node = document.createElement("div");
             let firedEvent: any = null;
             node.addEventListener("hass-action", (e) => {
@@ -345,7 +335,6 @@ describe("handleAction", () => {
                     tap_action: "more-info"
                 },
                 "tap",
-                hassMock.hass,
                 hassMock.createAccessor(sensor.entity_id)
             );
 
@@ -374,7 +363,6 @@ describe("handleAction", () => {
                     }
                 },
                 "tap",
-                hassMock.hass,
                 hassMock.createAccessor(sensor.entity_id)
             );
 
@@ -405,7 +393,6 @@ describe("handleAction", () => {
                     }
                 },
                 "tap",
-                hassMock.hass,
                 hassMock.createAccessor(sensor.entity_id)
             );
 

@@ -3,11 +3,41 @@ import { getValueFromObject } from "./utils";
 
 export const BATTERY_NOTES_PLATFORM = "battery_notes";
 
+const validEntityDomains = [
+    "automation",
+    "binary_sensor",
+    "button",
+    "calendar",
+    "camera",
+    "climate",
+    "device_tracker",
+    "group",
+    "input_boolean",
+    "input_datetime",
+    "input_number",
+    "input_select",
+    "input_text",
+    "light",
+    "media_player",
+    "number",
+    "person",
+    "remote",
+    "scene",
+    "script",
+    "select",
+    "sensor",
+    "switch",
+    "update",
+    "weather",
+    "zone",
+];
+
 /**
  * Lazy-resolving data accessor for entity data.
  * Single source of truth for filters, rendering, and debug output.
  *
  * Resolution paths:
+ * - <domain>.<id>.* → hass.states[domain.id] (cross-entity lookup)
  * - entity.*    → hass.entities[entityId]
  * - device.*    → hass.devices[deviceId]
  * - area.*      → hass.areas[areaId] (chain: entity → device → area)
@@ -16,7 +46,7 @@ export const BATTERY_NOTES_PLATFORM = "battery_notes";
  */
 export class EntityDataAccessor {
 
-    private computed: IMap<any> = {};
+    private _computed: IMap<any> = {};
 
     constructor(
         private hass: HomeAssistantExt,
@@ -45,27 +75,50 @@ export class EntityDataAccessor {
         return id ? this.hass.areas?.[id] : undefined;
     }
 
+    /** Computed/derived data (state, charging, battery_notes) */
+    get computed(): IMap<any> { return this._computed; }
+
     /** Store computed/derived data under the "computed" namespace */
     setComputed(key: string, value: any): void {
-        this.computed[key] = value;
+        this._computed[key] = value;
     }
 
     /** Resolve a dotted path to its value from the right source */
     resolve(path: string): any {
+        // Cross-entity lookup (e.g., sensor.some_entity.attributes.brightness)
+        const chunks = path.split(".");
+        if (validEntityDomains.includes(chunks[0])) {
+            const otherEntityId = chunks[0] + "." + chunks[1];
+            const stateObj = this.hass.states[otherEntityId];
+            if (!stateObj) {
+                return undefined;
+            }
+            const remainingPath = chunks.slice(2).join(".");
+            return remainingPath
+                ? getValueFromObject(stateObj, remainingPath)
+                : stateObj;
+        }
+
         if (path.startsWith("entity.")) {
-            return getValueFromObject(this.entity, path.substring(7));
+            return this.entity ? getValueFromObject(this.entity, path.substring(7)) : undefined;
         }
         if (path.startsWith("device.")) {
-            return getValueFromObject(this.device, path.substring(7));
+            return this.device ? getValueFromObject(this.device, path.substring(7)) : undefined;
         }
         if (path.startsWith("area.")) {
-            return getValueFromObject(this.area, path.substring(5));
+            return this.area ? getValueFromObject(this.area, path.substring(5)) : undefined;
         }
         if (path.startsWith("computed.")) {
-            return getValueFromObject(this.computed, path.substring(9));
+            return getValueFromObject(this._computed, path.substring(9));
         }
-        // Fall back to hass state (attributes, last_changed, etc.)
-        return getValueFromObject(this.state, path);
+        // Fall back to hass state, then computed data
+        if (this.state) {
+            const stateResult = getValueFromObject(this.state, path);
+            if (stateResult !== undefined) {
+                return stateResult;
+            }
+        }
+        return getValueFromObject(this._computed, path);
     }
 
     /** Serialize all data for debug output */
@@ -75,7 +128,7 @@ export class EntityDataAccessor {
             entity: this.entity,
             device: this.device,
             area: this.area,
-            computed: this.computed,
+            computed: this._computed,
         }, null, 2);
     }
 }
