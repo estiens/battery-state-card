@@ -2,7 +2,7 @@ import { log, safeGetConfigArrayOfObjects } from "./utils";
 import { BatteryStateEntity } from "./custom-elements/battery-state-entity";
 import { createFilter, Filter } from "./filter";
 import { HomeAssistantExt } from "./type-extensions";
-import { EntityDataAccessor } from "./entity-data-accessor";
+import { EntityDataAccessor, BATTERY_NOTES_PLATFORM } from "./entity-data-accessor";
 
 /**
  * Properties which should be copied over to individual entities from the card
@@ -24,7 +24,7 @@ const entititesGlobalProps: (keyof IBatteryEntityConfig)[] = [
     "value_override",
     "unit",
     "style",
-    "battery_notes_enabled",
+    "battery_notes_dedup",
 ];
 
 /**
@@ -58,6 +58,11 @@ export class BatteryProvider {
     public groupsData: IGroupDataMap = {};
 
     /**
+     * Entities explicitly configured by the user (protected from dedup removal).
+     */
+    private explicitEntities: Set<string> = new Set();
+
+    /**
      * Whether include filters were processed already.
      */
     private initialized: boolean = false;
@@ -84,6 +89,8 @@ export class BatteryProvider {
             if (this.config.unpack) {
                 this.processUnpackEntities(hass);
             }
+
+            this.processBatteryNotesDedup(hass);
         }
 
         const updateComplete = Object.keys(this.batteries).map(id => {
@@ -164,6 +171,7 @@ export class BatteryProvider {
 
         entities.forEach(entityConf => {
             this.batteries[entityConf.entity] = this.createBattery(entityConf);
+            this.explicitEntities.add(entityConf.entity);
         });
     }
 
@@ -286,6 +294,64 @@ export class BatteryProvider {
         });
 
         toBeRemoved.forEach(entityId => delete this.batteries[entityId]);
+    }
+
+    /**
+     * Deduplicates battery_notes entities per device.
+     * Prefers battery_plus (platform=battery_notes + state_class=measurement) over original battery entities.
+     * Explicit entities (from config.entities) are never removed.
+     */
+    private processBatteryNotesDedup(hass: HomeAssistantExt): void {
+        if (this.config.battery_notes_dedup === false) {
+            return;
+        }
+
+        // Group battery entity IDs by device_id
+        const deviceGroups: { [deviceId: string]: string[] } = {};
+        const accessors: { [entityId: string]: EntityDataAccessor } = {};
+        Object.keys(this.batteries).forEach(entityId => {
+            const accessor = new EntityDataAccessor(hass, entityId);
+            accessors[entityId] = accessor;
+            const deviceId = accessor.entity?.device_id;
+            if (!deviceId) return;
+            if (!deviceGroups[deviceId]) deviceGroups[deviceId] = [];
+            deviceGroups[deviceId].push(entityId);
+        });
+
+        const toRemove: string[] = [];
+
+        Object.keys(deviceGroups).forEach(deviceId => {
+            const entityIds = deviceGroups[deviceId];
+            if (entityIds.length <= 1) return;
+
+            // Check if any entity in this device group has device_class "battery"
+            const hasBatteryEntity = entityIds.some(id =>
+                accessors[id].attributes?.device_class === "battery"
+            );
+            if (!hasBatteryEntity) return;
+
+            // Identify battery_plus entity: battery_notes platform + state_class measurement + device_class battery
+            const batteryPlusId = entityIds.find(id => {
+                const accessor = accessors[id];
+                return accessor.entity?.platform === BATTERY_NOTES_PLATFORM
+                    && accessor.attributes?.device_class === "battery"
+                    && accessor.attributes?.state_class === "measurement";
+            });
+
+            if (batteryPlusId) {
+                // Remove original (non-BN) battery entities, keep battery_plus
+                entityIds.forEach(id => {
+                    if (id === batteryPlusId) return;
+                    if (this.explicitEntities.has(id)) return;
+
+                    if (accessors[id].attributes?.device_class === "battery") {
+                        toRemove.push(id);
+                    }
+                });
+            }
+        });
+
+        toRemove.forEach(entityId => delete this.batteries[entityId]);
     }
 }
 

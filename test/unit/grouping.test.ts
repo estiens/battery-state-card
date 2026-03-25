@@ -244,16 +244,16 @@ describe("Grouping - group_by (by)", () => {
 
     test("group_by with nested attribute path", () => {
         const batteries = [
-            createBattery("Device A", "80", { battery_notes: { attributes: { battery_type: "CR2032" } } }),
-            createBattery("Device B", "60", { battery_notes: { attributes: { battery_type: "CR2032" } } }),
-            createBattery("Device C", "90", { battery_notes: { attributes: { battery_type: "AAA" } } }),
-            createBattery("Device D", "50"), // no battery_notes
+            createBattery("Device A", "80", { attributes: { battery_type: "CR2032" } }),
+            createBattery("Device B", "60", { attributes: { battery_type: "CR2032" } }),
+            createBattery("Device C", "90", { attributes: { battery_type: "AAA" } }),
+            createBattery("Device D", "50"), // no battery_type
         ];
         const collection = toCollection(batteries);
         const sortedIds = batteries.map(b => b.entityId!);
 
         const result = getBatteryGroups(collection, sortedIds, [
-            { by: "battery_notes.attributes.battery_type" },
+            { by: "attributes.battery_type" },
         ], {});
 
         expect(result.groups).toHaveLength(2);
@@ -310,20 +310,20 @@ describe("Grouping - group_by (by)", () => {
         expect(result.list).toHaveLength(2);
     });
 
-    test("group_by battery_notes.battery_type with state filter - user scenario", () => {
+    test("group_by attributes.battery_type with state filter - user scenario", () => {
         const batteries = [
-            createBattery("Device A", "30", { battery_notes: { battery_type: "CR2032" } }),
-            createBattery("Device B", "80", { battery_notes: { battery_type: "CR2032" } }),
-            createBattery("Device C", "10", { battery_notes: { battery_type: "AAA" } }),
-            createBattery("Device D", "60", { battery_notes: { battery_type: "AAA" } }),
-            createBattery("Device E", "90"), // no battery_notes
+            createBattery("Device A", "30", { attributes: { battery_type: "CR2032" } }),
+            createBattery("Device B", "80", { attributes: { battery_type: "CR2032" } }),
+            createBattery("Device C", "10", { attributes: { battery_type: "AAA" } }),
+            createBattery("Device D", "60", { attributes: { battery_type: "AAA" } }),
+            createBattery("Device E", "90"), // no battery_type
         ];
         const collection = toCollection(batteries);
         const sortedIds = batteries.map(b => b.entityId!);
 
         const result = getBatteryGroups(collection, sortedIds, [
             {
-                by: "battery_notes.battery_type",
+                by: "attributes.battery_type",
                 icon: "mdi:battery-alert",
                 icon_color: "red",
                 filter: [{ name: "state", operator: "<", value: 50 }],

@@ -153,29 +153,4 @@ export function resolveSiblings(hass: HomeAssistantExt, entityId: string, device
         });
 }
 
-/**
- * Resolves battery_notes attributes from sibling entities on the same device.
- */
-export function resolveBatteryNotesData(hass: HomeAssistantExt, siblings: ISiblingEntity[]): IMap<any> | undefined {
-    if (!siblings || siblings.length === 0) {
-        return undefined;
-    }
 
-    for (const sibling of siblings) {
-        const entityEntry = hass.entities?.[sibling.entity_id];
-        if (entityEntry?.platform !== BATTERY_NOTES_PLATFORM) {
-            continue;
-        }
-
-        const state = hass.states[sibling.entity_id];
-        if (!state ||
-            state.attributes?.device_class !== "battery" ||
-            state.attributes?.battery_quantity === undefined) {
-            continue;
-        }
-
-        return state.attributes;
-    }
-
-    return undefined;
-}

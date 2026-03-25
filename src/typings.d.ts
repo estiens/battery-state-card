@@ -280,9 +280,10 @@ interface IBatteryEntityConfig {
     style?: string,
 
     /**
-     * Whether to use battery_notes integration data (filter duplicates, add attributes)
+     * Whether to deduplicate battery_notes entities per device (prefer battery_plus over original).
+     * Defaults to true when not specified.
      */
-    battery_notes_enabled?: boolean;
+    battery_notes_dedup?: boolean;
 }
 
 interface IBatteryCardConfig {
@@ -366,7 +367,7 @@ interface IGroupConfig {
      */
     filters?: FilterSpec[];
     /**
-     * Property path to automatically create sub-groups by (e.g. "area.name", "battery_notes.attributes.battery_type")
+     * Property path to automatically create sub-groups by (e.g. "area.name", "attributes.battery_type")
      */
     by?: string;
 }

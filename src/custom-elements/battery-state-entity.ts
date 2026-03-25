@@ -14,7 +14,7 @@ import { getName } from "../entity-fields/get-name";
 import { getIcon } from "../entity-fields/get-icon";
 import { EntityRegistryEntry } from "../type-extensions";
 import { RichStringProcessor } from "../rich-string-processor";
-import { EntityDataAccessor, resolveSiblings, resolveBatteryNotesData, BATTERY_NOTES_PLATFORM } from "../entity-data-accessor";
+import { EntityDataAccessor, resolveSiblings } from "../entity-data-accessor";
 
 /**
  * Battery entity element
@@ -105,43 +105,16 @@ export class BatteryStateEntity extends LovelaceCard<IBatteryEntityConfig> {
         }
 
         let siblings: ISiblingEntity[] = [];
-        let stateOverride: string | undefined;
 
         if (this.config.extend_entity_data !== false) {
             // Resolve siblings from device
             siblings = resolveSiblings(this.hass!, this.config.entity, this.accessor.entity?.device_id);
-
-            // battery_notes data is resolved on every update as it can change dynamically
-            if (this.config.battery_notes_enabled !== false && siblings.length > 0) {
-                const batteryNotesData = resolveBatteryNotesData(this.hass!, siblings);
-                if (batteryNotesData) {
-                    this.accessor.setComputed("battery_notes", batteryNotesData);
-                }
-
-                // For non-battery_notes entities with device_class "battery",
-                // substitute state from the battery_notes sibling if one exists
-                // with device_class "battery" and state_class "measurement"
-                if (this.accessor.entity?.platform !== BATTERY_NOTES_PLATFORM
-                    && this.accessor.attributes?.device_class === "battery") {
-                    const bnSibling = siblings.find(
-                        s => s.device_class === "battery" && s.state_class === "measurement"
-                    );
-                    if (bnSibling) {
-                        const bnEntry = this.hass!.entities?.[bnSibling.entity_id];
-                        if (bnEntry?.platform === BATTERY_NOTES_PLATFORM) {
-                            const bnState = this.hass!.states[bnSibling.entity_id];
-                            if (bnState) {
-                                stateOverride = bnState.state;
-                            }
-                        }
-                    }
-                }
-            }
+            this.accessor.setComputed("siblings", siblings);
 
             this.showEntity();
         }
 
-        var { state, level, unit} = getBatteryLevel(this.config, this.hass!, this.accessor, stateOverride);
+        var { state, level, unit} = getBatteryLevel(this.config, this.hass!, this.accessor);
         this.state = state;
         this.unit = unit;
         this.stateNumeric = level;

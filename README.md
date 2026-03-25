@@ -660,7 +660,7 @@ collapse:
 
 Instead of defining groups manually, you can use the `by` property to automatically create groups based on an entity data property. Each unique value of the property becomes a separate group. Entities where the value is missing, null, or empty stay ungrouped.
 
-> **Note:** When using dot-notation paths (e.g. `battery_notes.battery_type` or `area.name`), always wrap the value in quotes in YAML to prevent it from being interpreted as a nested key.
+> **Note:** When using dot-notation paths (e.g. `attributes.battery_type` or `area.name`), always wrap the value in quotes in YAML to prevent it from being interpreted as a nested key.
 
 **Group by area:**
 ```yaml
@@ -676,13 +676,13 @@ group:
 **Group by battery type (Battery Notes):**
 ```yaml
 type: "custom:battery-state-card"
-secondary_info: "{battery_notes.battery_type}"
+secondary_info: "{attributes.battery_type}"
 filter:
   include:
     - name: "attributes.device_class"
       value: battery
 collapse:
-  - by: "battery_notes.battery_type"
+  - by: "attributes.battery_type"
     icon: "mdi:battery-alert"
     icon_color: red
     filter:
@@ -1179,32 +1179,20 @@ colors:
 
 This card has built-in support for the [Battery Notes](https://github.com/andrew-codechimp/HA-Battery-Notes) integration. Battery Notes is a popular HACS integration that adds additional information about battery devices, such as battery type and quantity.
 
-When Battery Notes is installed it creates additional entities for each device (on the `battery_notes` platform). The card handles them in two ways:
+When Battery Notes is installed it creates additional entities for each device (on the `battery_notes` platform). The card automatically **deduplicates** these entities: when both the original battery entity and the Battery Notes "battery plus" entity (with `state_class: measurement`) are present, the card keeps only the battery plus entity, which has the most up-to-date state and extra attributes like `battery_type`.
 
-1. **Automatic filtering** - Battery Notes entities are automatically excluded when entities are discovered via include filters, preventing duplicate entries in the card.
-2. **Extra attributes** - Battery Notes data (e.g. `battery_type`, `battery_quantity`) is resolved from sibling entities and made available under the `battery_notes` key in entity data. This means you can use these values in templates such as `secondary_info`.
-
-This feature is **enabled by default**. If something doesn't work as expected you can turn it off:
+This deduplication is **enabled by default**. If you want to keep all entities (including duplicates), disable it:
 
 ```yaml
 type: "custom:battery-state-card"
-battery_notes_enabled: false
+battery_notes_dedup: false
 ```
 
-Or per-entity:
+With deduplication active, Battery Notes attributes are available directly on the entity. You can reference them in `secondary_info`:
 
 ```yaml
 type: "custom:battery-state-card"
-entities:
-  - entity: "sensor.my_device_battery"
-    battery_notes_enabled: false
-```
-
-When enabled, you can reference Battery Notes attributes in `secondary_info`:
-
-```yaml
-type: "custom:battery-state-card"
-secondary_info: "{battery_notes.battery_type}"
+secondary_info: "{attributes.battery_type}"
 filter:
   include:
     - name: "attributes.device_class"
@@ -1215,7 +1203,7 @@ You can also group batteries by battery type using the `by` property in [group c
 
 ```yaml
 type: "custom:battery-state-card"
-secondary_info: "{battery_notes.battery_type}"
+secondary_info: "{attributes.battery_type}"
 filter:
   include:
     - name: "attributes.device_class"
@@ -1223,7 +1211,7 @@ filter:
 sort:
   by: state
 collapse:
-  - by: "battery_notes.battery_type"
+  - by: "attributes.battery_type"
 ```
 
 ## Installation
