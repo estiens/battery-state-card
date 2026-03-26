@@ -127,7 +127,7 @@ export class BatteryStateCard extends LovelaceCard<IBatteryStateCardConfig> {
      * Home Assistant uses this to automatically distribute all cards over
      * the available columns. One is equal 50px.
      *
-     * Unfortunatelly this func is called only once when layout is being
+     * Unfortunately this func is called only once when layout is being
      * rendered thus in case of dynamic number of entities (based on filters)
      * we cannot provide any reasonable estimation.
      */

@@ -7,7 +7,7 @@ const relativeTimeTag = new RegExp("<rt>([^<]+)</rt>", "g");
 
 
 /**
- * Replaces temporary RT tages with proper HA "relative-time" ones
+ * Replaces temporary RT tags with proper HA "relative-time" ones
  *
  * @param text Text to be processed
  * @param hass HomeAssistant instance

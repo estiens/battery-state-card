@@ -13,7 +13,7 @@ export const DefaultIcon = "<default_icon>";
  * Gets MDI icon class
  * @param config Entity config
  * @param level Battery level/state
- * @param isCharging Whether battery is in chargin mode
+ * @param isCharging Whether battery is in charging mode
  * @param hass HomeAssistant state object
  * @returns Mdi icon string
  */

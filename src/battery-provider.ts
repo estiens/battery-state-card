@@ -7,7 +7,7 @@ import { EntityDataAccessor, BATTERY_NOTES_PLATFORM } from "./entity-data-access
 /**
  * Properties which should be copied over to individual entities from the card
  */
-const entititesGlobalProps: (keyof IBatteryEntityConfig)[] = [
+const entitiesGlobalProps: (keyof IBatteryEntityConfig)[] = [
     "bulk_rename",
     "charging_state",
     "colors",
@@ -28,7 +28,7 @@ const entititesGlobalProps: (keyof IBatteryEntityConfig)[] = [
 ];
 
 /**
- * Class responsible for intializing Battery view models based on given configuration.
+ * Class responsible for initializing battery view models based on given configuration.
  */
 export class BatteryProvider {
 
@@ -38,7 +38,7 @@ export class BatteryProvider {
     private include: Filter[] | undefined;
 
     /**
-     * Filters to remove entitites from collection.
+     * Filters to remove entities from collection.
      */
     private exclude: Filter[] | undefined;
 
@@ -116,8 +116,8 @@ export class BatteryProvider {
      * Creates and returns new Battery View Model
      */
     private createBattery(entityConfig: IBatteryEntityConfig): IBatteryCollectionItem {
-        // assing card-level values if they were not defined on entity-level
-        entititesGlobalProps
+        // assign card-level values if they were not defined on entity-level
+        entitiesGlobalProps
             .filter(p => (<any>entityConfig)[p] == undefined)
             .forEach(p => (<any>entityConfig)[p] = (<any>this.config)[p]);
 

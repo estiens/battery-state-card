@@ -122,8 +122,8 @@ const expandGroupByConfigs = (config: IGroupConfig[], batteries: IBatteryCollect
 /**
  * Returns group index to which battery should be assigned.
  * @param config Collapsing groups config
- * @param battery Batterry view model
- * @param haGroupData Home assistant group data
+ * @param battery Battery view model
+ * @param haGroupData Home Assistant group data
  * @param compiledFilters Compiled filter instances for each group
  */
 const getGroupIndex = (config: IGroupConfig[], battery: IBatteryCollectionItem, haGroupData: IGroupDataMap, compiledFilters: (Filter[] | undefined)[]): number => {
@@ -176,8 +176,8 @@ var populateMinMaxFields = (config: IGroupConfig[]): void => config.forEach(grou
 
 /**
  * Creates and returns group view data object.
- * @param haGroupData Home assistant group data
- * @param batteries Batterry view model
+ * @param haGroupData Home Assistant group data
+ * @param batteries Battery view model
  * @param config Collapsing group config
  */
 const createGroup = (haGroupData: IGroupDataMap, batteryIds: string[], config?: IGroupConfig): IBatteryGroup => {

@@ -2,10 +2,10 @@ import { IBatteryCollection } from "./battery-provider";
 import { isNumber, log, safeGetConfigArrayOfObjects, toNumber } from "./utils";
 
 /**
- * Sorts batteries by given criterias and returns their IDs
+ * Sorts batteries by given criteria and returns their IDs
  * @param config Card configuration
  * @param batteries List of all known battery elements
- * @returns List of battery IDs (batteries sorted by given criterias)
+ * @returns List of battery IDs (batteries sorted by given criteria)
  */
  export const getIdsOfSortedBatteries = (config: IBatteryCardConfig, batteries: IBatteryCollection): string[] => {
     let batteriesToSort = Object.keys(batteries);
