@@ -10,7 +10,7 @@ import { isNumber, log, safeGetConfigArrayOfObjects, toNumber } from "./utils";
  export const getIdsOfSortedBatteries = (config: IBatteryCardConfig, batteries: IBatteryCollection): string[] => {
     let batteriesToSort = Object.keys(batteries);
 
-    const sortOptions = safeGetConfigArrayOfObjects(config.sort, "by");
+    const sortOptions = safeGetConfigArrayOfObjects(config.sort, "by").filter(o => o.by);
 
     return batteriesToSort.sort((idA, idB) => {
         let result = 0;

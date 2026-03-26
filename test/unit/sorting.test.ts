@@ -81,6 +81,13 @@ describe("Entity sorting", () => {
         expect(sortedIds).toStrictEqual(expectedOrder);
     });
 
+    test("Empty sort object does not throw", () => {
+        const sortedIds = getIdsOfSortedBatteries({ entities: [], sort: <any>{} }, convertToCollection(batteries));
+
+        // original insertion order preserved
+        expect(sortedIds).toStrictEqual(["z_sensor", "b_sensor", "m_sensor", "a_sensor", "g_sensor"]);
+    });
+
     test.each([
         ["state", "38", "38,5", "38,4", ["a_sensor", "c_sensor", "b_sensor"]],
         ["state", "38", "99,5", "99,4", ["a_sensor", "c_sensor", "b_sensor"]],
