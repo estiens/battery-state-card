@@ -1,6 +1,6 @@
 import { IBatteryCollection, IBatteryCollectionItem } from "../../src/battery-provider";
 import { getIdsOfSortedBatteries } from "../../src/sorting";
-import { convertoToEntityId } from "../helpers";
+import { convertToEntityId } from "../helpers";
 import { EntityDataAccessor } from "../../src/entity-data-accessor";
 import { HomeAssistantExt } from "../../src/type-extensions";
 
@@ -11,9 +11,9 @@ describe("Entity sorting", () => {
         [<SortByOption>"name", true, ["z_sensor", "m_sensor", "g_sensor", "b_sensor", "a_sensor"]],
         [<SortByOption>"state", false, ["m_sensor", "g_sensor", "b_sensor", "a_sensor", "z_sensor"]],
         [<SortByOption>"state", true, ["z_sensor", "b_sensor", "a_sensor", "g_sensor", "m_sensor"]],
-    ])("Sorting with single option", (sortyBy: SortByOption, desc: boolean, expectedOrder: string[]) => {
+    ])("Sorting with single option", (sortBy: SortByOption, desc: boolean, expectedOrder: string[]) => {
 
-        const sortedIds = getIdsOfSortedBatteries({ entities: [], sort: [{ by: sortyBy, desc: desc }]}, convertToCollection(batteries));
+        const sortedIds = getIdsOfSortedBatteries({ entities: [], sort: [{ by: sortBy, desc: desc }]}, convertToCollection(batteries));
 
         expect(sortedIds).toStrictEqual(expectedOrder);
     })
@@ -110,7 +110,7 @@ describe("Entity sorting", () => {
 const mockHass: HomeAssistantExt = <any>{ states: {}, entities: {}, devices: {}, areas: {} };
 
 const createBattery = (name: string, state: string | undefined, last_changed?: string | undefined) => {
-    const entityId = convertoToEntityId(name);
+    const entityId = convertToEntityId(name);
     const stateData: any = {
         entity_id: entityId,
         state: state,

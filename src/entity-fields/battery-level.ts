@@ -15,7 +15,7 @@ const stringValuePattern = /\b([0-9]{1,3})\s?%/;
 const formattedStatePattern = /(-?[0-9,.]+)\s?(.*)/;
 
 /**
- * Getts battery level/state
+ * Gets battery level/state
  * @param config Entity config
  * @param hass HomeAssistant state object
  * @returns Battery level

@@ -1,6 +1,6 @@
 import { IBatteryCollection, IBatteryCollectionItem } from "../../src/battery-provider";
 import { getBatteryGroups } from "../../src/grouping";
-import { convertoToEntityId } from "../helpers";
+import { convertToEntityId } from "../helpers";
 import { EntityDataAccessor } from "../../src/entity-data-accessor";
 import { HomeAssistantExt } from "../../src/type-extensions";
 
@@ -8,7 +8,7 @@ let areaCounter = 0;
 const mockHass: HomeAssistantExt = <any>{ states: {}, entities: {}, devices: {}, areas: {} };
 
 const createBattery = (name: string, state: string, entityData?: IMap<any>, extraProps?: Partial<IBatteryCollectionItem>): IBatteryCollectionItem => {
-    const id = convertoToEntityId(name);
+    const id = convertToEntityId(name);
 
     // Build state object from entityData, but handle special accessor prefixes
     const stateData: any = {
