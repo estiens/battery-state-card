@@ -82,11 +82,11 @@ jobs:
         with:
           config-name: ${{ github.ref_name == 'vNext' && 'release-config-beta-vnext.yml' || 'release-config-beta-master.yml' }}
           commitish: ${{ github.ref_name }}
-          publish: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload release assets
+        if: "!contains(steps.create_release.outputs.body, '* No changes')"
         run: |
           find ./dist -type f -exec gh release upload --clobber ${{ env.VERSION }} {} +
         env:
