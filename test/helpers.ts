@@ -6,7 +6,7 @@ import { throttledCall } from "../src/utils";
 import { EntityDataAccessor } from "../src/entity-data-accessor";
 
 /**
- * Removing all custome elements
+ * Removing all custom elements
  */
 afterEach(() => {
     ["battery-state-card", "battery-state-entity"].forEach(cardTagName => Array
@@ -75,7 +75,7 @@ export class EntityElements {
     constructor(private card: BatteryStateEntity, isShadowRoot: boolean = true) {
 
         if (isShadowRoot && !card.shadowRoot) {
-            throw Error("Missing shaddow root");
+            throw Error("Missing shadow root");
         }
 
         this.root = isShadowRoot ? <any>card.shadowRoot! : card;
@@ -201,7 +201,7 @@ export class HomeAssistantMock<T extends LovelaceCard<any>> {
     }
 
     addEntity(name: string, state?: string, attribs?: IEntityAttributes, domain?: string): IEntityMock {
-        const entityId = convertoToEntityId(name, domain);
+        const entityId = convertToEntityId(name, domain);
         const entity = {
             entity_id: entityId,
             state: state || "",
@@ -272,7 +272,7 @@ export class HomeAssistantMock<T extends LovelaceCard<any>> {
 }
 
 
-export const convertoToEntityId = (input: string, domain?: string) => {
+export const convertToEntityId = (input: string, domain?: string) => {
     return (domain ? domain + "." : "") + input.toLocaleLowerCase().replace(/[-\s]/g, "_");
 }
 

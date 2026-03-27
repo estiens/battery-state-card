@@ -5,7 +5,7 @@ import { EntityDataAccessor } from "../entity-data-accessor";
 /**
  * Gets secondary info text
  * @param config Entity config
- * @param entidyData Entity data
+ * @param accessor Entity data
  * @returns Secondary info text
  */
 export const getSecondaryInfo = (config: IBatteryEntityConfig, accessor: EntityDataAccessor | undefined): string => {

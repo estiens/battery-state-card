@@ -12,7 +12,7 @@ describe("Battery level", () => {
         expect(unit).toBe("%");
     });
 
-    test("doen't throw exception when attributes are not set on entity", () => {
+    test("doesn't throw an exception when attributes are not set on entity", () => {
         const hassMock = new HomeAssistantMock(true);
         const entity = hassMock.addEntity("Mocked entity", "45", { battery_state: "45" });
         entity.setAttributes(<any>null);
@@ -89,7 +89,7 @@ describe("Battery level", () => {
         expect(state).toBe("45");
     });
 
-    test("is taken from dafault locations - attribute: battery_level", () => {
+    test("is taken from default locations - attribute: battery_level", () => {
 
         const hassMock = new HomeAssistantMock(true);
         hassMock.addEntity("Mocked entity", "OK", { battery_level: "45%" });
@@ -100,7 +100,7 @@ describe("Battery level", () => {
         expect(state).toBe("45");
     });
 
-    test("is taken from dafault locations - attribute: battery", () => {
+    test("is taken from default locations - attribute: battery", () => {
 
         const hassMock = new HomeAssistantMock(true);
         hassMock.addEntity("Mocked entity", "OK", { battery: "45%" });
@@ -111,7 +111,7 @@ describe("Battery level", () => {
         expect(state).toBe("45");
     });
 
-    test("is taken from dafault locations - non battery entity", () => {
+    test("is taken from default locations - non battery entity", () => {
 
         const hassMock = new HomeAssistantMock(true);
         hassMock.addEntity("Mocked entity", "OK", { battery_level: "45%" });
@@ -122,7 +122,7 @@ describe("Battery level", () => {
         expect(state).toBe("OK");
     });
 
-    test("is taken from dafault locations - state", () => {
+    test("is taken from default locations - state", () => {
 
         const hassMock = new HomeAssistantMock(true);
         hassMock.addEntity("Mocked entity", "45");
@@ -133,7 +133,7 @@ describe("Battery level", () => {
         expect(state).toBe("45");
     });
 
-    test("is taken from dafault locations - numeric value cannot be found", () => {
+    test("is taken from default locations - numeric value cannot be found", () => {
 
         const hassMock = new HomeAssistantMock(true);
         hassMock.addEntity("Mocked entity", "OK");

@@ -133,7 +133,7 @@ interface IChargingState {
 type FilterGroupTypes = "exclude" | "include";
 
 /**
- * Supprted filter operators
+ * Supported filter operators
  */
 type FilterOperator = "exists" | "not_exists" | "=" | ">" | "<" | ">=" | "<=" | "contains" | "matches";
 
@@ -190,7 +190,7 @@ interface IBatteryEntityConfig {
     icon?: string | null;
 
     /**
-     * Attribute name to extract batterly level from
+     * Attribute name to extract battery level from
      */
     attribute?: string;
 
