@@ -30,6 +30,7 @@ on:
 
 jobs:
   validate_release:
+    if: "!contains(github.event.head_commit.message, 'dependabot/')"
     runs-on: macOS-latest
     steps:
       - name: Checkout files
@@ -57,7 +58,7 @@ jobs:
 
   update_beta_release_draft:
     needs: validate_release
-    if: github.actor != 'dependabot[bot]' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.release_type == 'beta'))
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.release_type == 'beta')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout files
@@ -95,7 +96,7 @@ jobs:
 
   update_stable_release_draft:
     needs: validate_release
-    if: github.actor != 'dependabot[bot]' && github.event_name == 'workflow_dispatch' && github.event.inputs.release_type == 'stable'
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.release_type == 'stable'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout files
