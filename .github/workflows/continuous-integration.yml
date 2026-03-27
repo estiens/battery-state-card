@@ -14,9 +14,9 @@ jobs:
     runs-on: macOS-latest
     steps:
       - name: Checkout files
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: NodeJS setup
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org/
@@ -27,6 +27,6 @@ jobs:
       - name: Test
         run: npm run test:coverage
       - name: Coveralls
-        uses: coverallsapp/github-action@v1.1.2
+        uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
