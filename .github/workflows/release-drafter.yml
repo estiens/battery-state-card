@@ -121,7 +121,14 @@ jobs:
 
       - name: Determine version
         id: version
-        run: echo "value=${{ github.event.inputs.version_override || steps.resolve_version.outputs.resolved_version }}" >> $GITHUB_OUTPUT
+        run: |
+          OVERRIDE="${{ github.event.inputs.version_override }}"
+          RESOLVED="${{ steps.resolve_version.outputs.resolved_version }}"
+          if [ -n "$OVERRIDE" ]; then
+            echo "value=$OVERRIDE" >> $GITHUB_OUTPUT
+          else
+            echo "value=$RESOLVED" >> $GITHUB_OUTPUT
+          fi
 
       - name: Update package.json version
         run: npm version ${{ steps.version.outputs.value }} --no-git-tag-version --allow-same-version
