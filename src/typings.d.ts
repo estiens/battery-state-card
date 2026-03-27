@@ -326,6 +326,11 @@ interface IBatteryCardConfig {
      * Name of the theme to apply (must be installed in Home Assistant)
      */
     theme?: string;
+
+    /**
+     * Whether to use default config values for settings not specified by the user
+     */
+    default_config_base?: boolean;
 }
 
 /**
