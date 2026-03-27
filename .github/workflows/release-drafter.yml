@@ -2,20 +2,36 @@ name: Release Drafter
 
 on:
   workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'beta'
+        type: choice
+        options:
+          - beta
+          - stable
+      branch:
+        description: 'Branch to release from (for stable releases)'
+        required: true
+        default: 'master'
+        type: choice
+        options:
+          - master
+          - vNext
+      version_override:
+        description: 'Version override for stable release (e.g. 4.1.0). Leave empty to auto-resolve.'
+        required: false
+        type: string
   push:
-    # branches to consider in the event; optional, defaults to all
     branches:
       - master
-  # pull_request event is required only for autolabeler
-  # pull_request:
-  #   # Only following types are handled by the action, but one can default to all as well
-  #   types: [opened, reopened, synchronize]
+      - vNext
 
 jobs:
   validate_release:
     runs-on: macOS-latest
     steps:
-      # build files
       - name: Checkout files
         uses: actions/checkout@v2
 
@@ -39,8 +55,9 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-  update_release_draft:
+  update_beta_release_draft:
     needs: validate_release
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.release_type == 'beta')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout files
@@ -58,12 +75,13 @@ jobs:
       - name: Build release
         run: npm run release
 
-      - name: Create release draft
+      - name: Create beta release draft
         id: create_release
         uses: release-drafter/release-drafter@v7
-        # (Optional) specify config name to use, relative to .github/. Default: release-drafter.yml
         with:
-           config-name: release-config.yml
+          config-name: ${{ github.ref_name == 'vNext' && 'release-config-beta-vnext.yml' || 'release-config-beta-master.yml' }}
+          commitish: ${{ github.ref_name }}
+          publish: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -74,3 +92,68 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.create_release.outputs.tag_name }}
           FILES: ./dist/*
+
+  update_stable_release_draft:
+    needs: validate_release
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.release_type == 'stable'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout files
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: NodeJS setup
+        uses: actions/setup-node@v2
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org/
+
+      - name: Resolve version (dry run)
+        id: resolve_version
+        uses: release-drafter/release-drafter@v7
+        with:
+          config-name: release-config.yml
+          commitish: ${{ github.event.inputs.branch }}
+          dry-run: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine version
+        id: version
+        run: echo "value=${{ github.event.inputs.version_override || steps.resolve_version.outputs.resolved_version }}" >> $GITHUB_OUTPUT
+
+      - name: Update package.json version
+        run: npm version ${{ steps.version.outputs.value }} --no-git-tag-version --allow-same-version
+
+      - name: Installing dependencies
+        run: npm ci
+
+      - name: Build release
+        run: npm run release
+
+      - name: Create stable release draft
+        id: create_release
+        uses: release-drafter/release-drafter@v7
+        with:
+          config-name: release-config.yml
+          commitish: ${{ github.event.inputs.branch }}
+          version: ${{ steps.version.outputs.value }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload release assets
+        run: |
+          find ./dist -type f -exec gh release upload --clobber ${{ env.VERSION }} {} +
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.create_release.outputs.tag_name }}
+          FILES: ./dist/*
+
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json
+          git commit -m "chore: bump version to ${{ steps.version.outputs.value }} [skip ci]" || true
+          git push
