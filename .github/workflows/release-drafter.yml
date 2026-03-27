@@ -86,7 +86,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload release assets
-        if: "!contains(steps.create_release.outputs.body, '* No changes')"
         run: |
           find ./dist -type f -exec gh release upload --clobber ${{ env.VERSION }} {} +
         env:
@@ -150,11 +149,3 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.create_release.outputs.tag_name }}
           FILES: ./dist/*
-
-      - name: Commit version bump
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package.json
-          git commit -m "chore: bump version to ${{ steps.version.outputs.value }} [skip ci]" || true
-          git push
