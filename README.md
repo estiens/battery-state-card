@@ -97,6 +97,7 @@ colors: {}
 | filter | [Filters](#filters) |  | v1.3.0 | Filter groups to automatically include or exclude entities ([example](#entity-filtering-and-bulk-renaming))
 | bulk_rename | list([Convert](#convert)) \| [BulkRename](#bulk-rename) |  | v1.3.0 | Rename rules applied for all entities ([example](#entity-filtering-and-bulk-renaming))
 | theme | string |  | v3.3.0 | Name of the theme to apply (must be installed in Home Assistant). ([example](#using-themes))
+| default_config_base | boolean | `true` | v4.1.0 | Whether to use default config values (sort, collapse, colors, etc.) as a base for the card configuration. When set to `false` only user-specified settings are used. Useful when entities are managed externally (e.g. via auto-entities card).
 
 +[common options](#common-options) (if specified they will be applied to all entities)
 
