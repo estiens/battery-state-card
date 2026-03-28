@@ -1,6 +1,9 @@
 name-template: 'v$RESOLVED_VERSION'
 tag-template: 'v$RESOLVED_VERSION'
 categories:
+  - title: '⚠️ Breaking Changes'
+    labels:
+      - 'breaking'
   - title: '🚀 Features'
     labels:
       - 'feature'
@@ -19,10 +22,26 @@ exclude-labels:
   - 'dependencies'
 change-template: '- $TITLE #$NUMBER (@$AUTHOR)'
 change-title-escapes: '\<*_&' # You can add # and @ to disable mentions, and add ` to disable code blocks.
+autolabeler:
+  - label: 'breaking'
+    title:
+      - '/!:/i'
+    body:
+      - '/BREAKING CHANGE/i'
+  - label: 'enhancement'
+    title:
+      - '/^feat[:(]/i'
+  - label: 'bug'
+    title:
+      - '/^fix[:(]/i'
+  - label: 'miscellaneous'
+    title:
+      - '/^chore[:(]/i'
 version-resolver:
   major:
     labels:
       - 'major'
+      - 'breaking'
   minor:
     labels:
       - 'minor'

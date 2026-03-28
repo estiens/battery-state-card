@@ -1,0 +1,15 @@
+name: Autolabeler
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  autolabel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: release-drafter/release-drafter@v7
+        with:
+          config-name: release-config.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
