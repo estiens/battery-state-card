@@ -70,6 +70,19 @@ jobs:
           node-version: 22
           registry-url: https://registry.npmjs.org/
 
+      - name: Resolve version (dry run)
+        id: resolve_version
+        uses: release-drafter/release-drafter@v7
+        with:
+          config-name: ${{ github.ref_name == 'vNext' && 'release-config-beta-vnext.yml' || 'release-config-beta-master.yml' }}
+          commitish: ${{ github.ref_name }}
+          dry-run: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update package.json version
+        run: npm version ${{ steps.resolve_version.outputs.resolved_version }} --no-git-tag-version --allow-same-version
+
       - name: Installing dependencies
         run: npm ci
 
