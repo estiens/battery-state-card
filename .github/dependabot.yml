@@ -40,3 +40,7 @@ updates:
   - dependency-name: "@rollup/plugin-node-resolve"
     versions:
     - 11.2.0
+- package-ecosystem: "github-actions"
+  directory: "/"
+  schedule:
+    interval: "monthly"
