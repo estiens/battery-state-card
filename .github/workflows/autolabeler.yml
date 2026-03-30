@@ -1,8 +1,13 @@
 name: Autolabeler
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, reopened, synchronize]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
 
 jobs:
   autolabel:
