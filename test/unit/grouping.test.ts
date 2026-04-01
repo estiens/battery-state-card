@@ -21,7 +21,7 @@ const createBattery = (name: string, state: string, entityData?: IMap<any>, extr
         // Set up area registry if area data is provided
         if (entityData.area) {
             const areaId = entityData.area.name ? `area_${entityData.area.name.toString().toLowerCase().replace(/\s/g, "_")}` : `area_${++areaCounter}`;
-            mockHass.areas![areaId] = { area_id: areaId, name: entityData.area.name, picture: null, aliases: [] };
+            mockHass.areas![areaId] = { area_id: areaId, name: entityData.area.name, picture: null, aliases: [], icon: entityData.area.icon || null };
             mockHass.entities![id] = <any>{ entity_id: id, area_id: areaId };
         }
 
@@ -343,6 +343,51 @@ describe("Grouping - group_by (by)", () => {
 
         // Device B (80, CR2032), Device D (60, AAA), Device E (90, no notes) should be ungrouped
         expect(result.list).toHaveLength(3);
+    });
+
+    test("group_by area.name with dynamic area.icon template", () => {
+        const batteries = [
+            createBattery("Kitchen Light", "80", { area: { name: "Kitchen", icon: "mdi:silverware-fork-knife" } }),
+            createBattery("Kitchen Sensor", "60", { area: { name: "Kitchen", icon: "mdi:silverware-fork-knife" } }),
+            createBattery("Bedroom Light", "90", { area: { name: "Bedroom", icon: "mdi:bed" } }),
+        ];
+        const collection = toCollection(batteries);
+        const sortedIds = batteries.map(b => b.entityId!);
+
+        const result = getBatteryGroups(collection, sortedIds, [
+            {
+                by: "area.name",
+                icon: "{area.icon}",
+            },
+        ], {});
+
+        expect(result.groups).toHaveLength(2);
+
+        const kitchenGroup = result.groups.find(g => g.title === "Kitchen");
+        expect(kitchenGroup).toBeDefined();
+        expect(kitchenGroup!.icon).toBe("mdi:silverware-fork-knife");
+
+        const bedroomGroup = result.groups.find(g => g.title === "Bedroom");
+        expect(bedroomGroup).toBeDefined();
+        expect(bedroomGroup!.icon).toBe("mdi:bed");
+    });
+
+    test("group_by with dynamic icon template resolving to empty falls back to undefined", () => {
+        const batteries = [
+            createBattery("Kitchen Light", "80", { area: { name: "Kitchen" } }), // no icon on area
+        ];
+        const collection = toCollection(batteries);
+        const sortedIds = batteries.map(b => b.entityId!);
+
+        const result = getBatteryGroups(collection, sortedIds, [
+            {
+                by: "area.name",
+                icon: "{area.icon}",
+            },
+        ], {});
+
+        expect(result.groups).toHaveLength(1);
+        expect(result.groups[0].icon).toBeUndefined();
     });
 });
 

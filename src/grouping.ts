@@ -1,6 +1,7 @@
 import { log, toNumber } from "./utils";
 import { IBatteryCollection, IBatteryCollectionItem } from "./battery-provider";
 import { createFilter, Filter } from "./filter";
+import { RichStringProcessor } from "./rich-string-processor";
 
 export interface IBatteryGroup {
     title?: string;
@@ -248,6 +249,14 @@ const getIcon = (icon: string | undefined, batteryIdsInGroup: string[], batterie
             }
             else {
                 icon = undefined;
+            }
+            break;
+        default:
+            if (icon && icon.includes("{") && batteryIdsInGroup.length > 0) {
+                const accessor = batteries[batteryIdsInGroup[0]].accessor;
+                const processor = new RichStringProcessor(accessor);
+                const resolved = processor.process(icon);
+                icon = (resolved && resolved !== "null") ? resolved : undefined;
             }
             break;
     }
