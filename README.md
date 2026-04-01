@@ -219,9 +219,13 @@ Note: Include filters should rely on static entity properties. E.g. you should n
 ### Filter object
 | Name | Type | Default | Description |
 |:-----|:-----|:-----|:-----|
-| name | string | **(required)** | Name of the property/attribute. E.g. `state`, `attribute.device_class`
+| name | string | **(required)** | Name of the property/attribute. E.g. `state`, `attribute.device_class`, `computed.state`
 | operator | string |  | Operator for value comparison (see [filter operators](#filter-operators))
 | value | any |  | Value to compare the property/attribute to
+
+| Name | Since | Type |
+|:-----|:-----|:-----|
+| `"computed.state"` | v4.1.0 |  If you want to compare the state after it was changed with e.g. state_map you need to reference `computed.state`. `state`reference to the orginal value.
 
 ### Composite filters
 
