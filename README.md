@@ -219,13 +219,11 @@ Note: Include filters should rely on static entity properties. E.g. you should n
 ### Filter object
 | Name | Type | Default | Description |
 |:-----|:-----|:-----|:-----|
-| name | string | **(required)** | Name of the property/attribute. E.g. `state`, `attribute.device_class`, `computed.state`
+| name | string | **(required)** | Name of the property/attribute. E.g. `state`, `computed.state`, `attribute.device_class`
 | operator | string |  | Operator for value comparison (see [filter operators](#filter-operators))
 | value | any |  | Value to compare the property/attribute to
 
-| Name | Since | Type |
-|:-----|:-----|:-----|
-| `"computed.state"` | v4.1.0 |  If you want to compare the state after it was changed with e.g. state_map you need to reference `computed.state`. `state`reference to the orginal value.
+**Note:** In v4.1.0 the `state` value is the original entity state (something what you may find in the HA developer tools). If you use `state_map`, any other state transformation or if you want to filter based on the final state shown in the card please use `computed.state` instead.
 
 ### Composite filters
 
