@@ -18,6 +18,7 @@ categories:
       - 'chore'
       - 'documentation'
       - 'miscellaneous'
+filter-by-commitish: true
 exclude-labels:
   - 'dependencies'
 change-template: '- $TITLE #$NUMBER (@$AUTHOR)'
@@ -53,7 +54,9 @@ template: |
   $CHANGES
 
   ❤️ Thank you to all contributors for your bug reports, ideas, and code. You're awesome!
+
   If you want to show your support please
+
   [![Buy me a coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://buymeacoffee.com/maxwroc)
 
   ![GitHub Releases (by Release)](https://img.shields.io/github/downloads/maxwroc/battery-state-card/v$RESOLVED_VERSION/total)
