@@ -18,6 +18,7 @@ categories:
       - 'chore'
       - 'documentation'
       - 'miscellaneous'
+filter-by-commitish: true
 exclude-labels:
   - 'dependencies'
 change-template: '- $TITLE #$NUMBER (@$AUTHOR)'
