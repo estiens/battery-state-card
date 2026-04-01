@@ -73,8 +73,8 @@ jobs:
         id: resolve_version
         uses: release-drafter/release-drafter@v7
         with:
-          config-name: ${{ github.ref_name == 'vNext' && 'release-config-beta-vnext.yml' || 'release-config-beta-master.yml' }}
-          commitish: ${{ github.ref_name }}
+          config-name: ${{ (github.event.inputs.branch || github.ref_name) == 'vNext' && 'release-config-beta-vnext.yml' || 'release-config-beta-master.yml' }}
+          commitish: ${{ github.event.inputs.branch || github.ref_name }}
           version: ${{ github.event.inputs.version_override || '' }}
           dry-run: true
         env:
@@ -93,8 +93,8 @@ jobs:
         id: create_release
         uses: release-drafter/release-drafter@v7
         with:
-          config-name: ${{ github.ref_name == 'vNext' && 'release-config-beta-vnext.yml' || 'release-config-beta-master.yml' }}
-          commitish: ${{ github.ref_name }}
+          config-name: ${{ (github.event.inputs.branch || github.ref_name) == 'vNext' && 'release-config-beta-vnext.yml' || 'release-config-beta-master.yml' }}
+          commitish: ${{ github.event.inputs.branch || github.ref_name }}
           version: ${{ github.event.inputs.version_override || '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
