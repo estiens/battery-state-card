@@ -423,8 +423,8 @@ Note: All of these values are optional but at least `entity_id` or `state` or `a
 
 | Name | Type | Default | Since | Description |
 |:-----|:-----|:-----|:-----|:-----|
-| name | string |  | v1.4.0 | Name of the group. Keywords available: `{min}`, `{max}`, `{count}`, `{range}`
-| secondary_info | string |  | v1.4.0 | Secondary info text, shown in the second line. Same keywords available as in `name`
+| name | string |  | v1.4.0 | Name of the group. Supports [group keywords](#group-keywords)
+| secondary_info | string |  | v1.4.0 | Secondary info text, shown in the second line. Supports [group keywords](#group-keywords)
 | icon | string |  | v1.4.0 | Group icon. It can be a static icon available in HA, dynamic one taken from one of the group items (`first`, `last`), or a template string resolved from entity data (e.g. `"{area.icon}"`)
 | icon_color | string |  | v2.0.0 | Group icon color. It can be a static HTML (e.g. `#ff0000`) or dynamic (`first` or `last`) color value based on the battery colors in the group.
 | min | number |  | v1.4.0 | Minimal battery level. Batteries below that level won't be assigned to this group.
@@ -432,6 +432,58 @@ Note: All of these values are optional but at least `entity_id` or `state` or `a
 | filter | list([Filter](#filter-object)) |  | v4.0.0 | Advanced filters for assigning batteries to the group (same filter syntax as card-level [filters](#filters)). When specified `min`/`max` are ignored. Supports [composite filters](#composite-filters).
 | by | string |  | v4.0.0 | Property path to automatically create sub-groups by (e.g. `"area.name"`). Each unique value becomes a separate group. Entities with missing values stay ungrouped. Can be combined with `filter`. ([example](#dynamic-grouping-with-by))
 | entities | list(string) |  | v1.4.0 | List of entity ids
+
+### Group keywords
+
+Group `name` and `secondary_info` fields support special keywords that are replaced with aggregated values from the group's entities.
+
+**Simple keywords** (operate on battery state):
+
+| Keyword | Description |
+|:--------|:------------|
+| `{min}` | Minimum battery state in the group |
+| `{max}` | Maximum battery state in the group |
+| `{count}` | Number of entities in the group |
+| `{range}` | Battery state range (e.g. `30-80`, or just `50` if all are equal) |
+| `{sum}` | Sum of battery states in the group |
+| `{avg}` | Average battery state in the group |
+
+**Aggregation functions with custom data path:**
+
+You can apply aggregation functions to any entity attribute or data path using the syntax `{function(path)}`:
+
+| Syntax | Description |
+|:-------|:------------|
+| `{sum(path)}` | Sum of values at the given path |
+| `{avg(path)}` | Average of values at the given path |
+| `{min(path)}` | Minimum value at the given path |
+| `{max(path)}` | Maximum value at the given path |
+| `{count(path)}` | Number of entities where the given path has a truthy value |
+| `{range(path)}` | Value range at the given path |
+
+The `path` can be any resolvable data path (e.g. `attributes.battery_count`). Entities where the path resolves to a missing or non-numeric value are excluded from the aggregation.
+
+**Combining with KString processors:**
+
+Aggregation results can be piped through [KString processors](#extracting-attributes-kstring) for formatting:
+
+```
+{avg(computed.state)|round(2)}     → "65.55"
+{sum(attributes.battery_count)|multiply(2)} → "12"
+```
+
+**Example:**
+```yaml
+type: "custom:battery-state-card"
+filter:
+  include:
+    - name: "attributes.device_class"
+      value: battery
+group:
+  - by: "attributes.battery_type"
+    name: "{count} batteries"
+    secondary_info: "Need {sum(attributes.battery_count)} replacements, avg level: {avg|round(0)}%"
+```
 
 ## Examples
 
@@ -599,8 +651,8 @@ type: 'custom:battery-state-card'
 title: Battery state card
 sort: "state"
 collapse:
-  - name: 'Door sensors (min: {min}%, count: {count})' # special keywords in group name
-    secondary_info: 'Battery levels {range}%' # special keywords in group secondary info
+  - name: 'Door sensors (min: {min}%, count: {count})' # simple keywords in group name
+    secondary_info: 'Battery levels {range}%, total: {sum}' # keywords in secondary info
     icon: 'mdi:door'
     entities: # explicit list of entities
       - sensor.bedroom_balcony_battery_level

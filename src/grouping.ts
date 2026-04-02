@@ -272,8 +272,16 @@ const resolveAggregation = (funcName: string, dataPath: string, group: IBatteryG
             const values = collectNumericValues(dataPath, group, batteries);
             return values.length ? (values.reduce((a, b) => a + b, 0) / values.length).toString() : "0";
         }
-        case "count":
-            return group.batteryIds.length.toString();
+        case "count": {
+            if (dataPath === "computed.state") {
+                return group.batteryIds.length.toString();
+            }
+            const count = group.batteryIds.filter(id => {
+                const val = batteries[id].accessor?.resolve(dataPath);
+                return val !== undefined && val !== null && val !== "" && val !== false && val !== 0;
+            }).length;
+            return count.toString();
+        }
         case "range": {
             const values = collectNumericValues(dataPath, group, batteries);
             if (!values.length) return "0";

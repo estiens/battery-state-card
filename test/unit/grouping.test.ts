@@ -866,10 +866,11 @@ describe("Grouping - aggregation functions", () => {
         expect(result.groups[0].title).toBe("Avg: 3");
     });
 
-    test("{count(attributes.battery_count)} returns count of entities in group", () => {
+    test("{count(attributes.battery_count)} counts entities with truthy value", () => {
         const batteries = [
             createBattery("Device A", "80", { attributes: { battery_count: 2 } }),
             createBattery("Device B", "60", { attributes: { battery_count: 4 } }),
+            createBattery("Device C", "40"), // no battery_count attribute
         ];
         const collection = toCollection(batteries);
         const sortedIds = batteries.map(b => b.entityId!);
@@ -879,6 +880,23 @@ describe("Grouping - aggregation functions", () => {
         ], {});
 
         expect(result.groups[0].title).toBe("Count: 2");
+    });
+
+    test("{count(attributes.battery_count)} excludes falsy values", () => {
+        const batteries = [
+            createBattery("Device A", "80", { attributes: { battery_count: 2 } }),
+            createBattery("Device B", "60", { attributes: { battery_count: 0 } }),
+            createBattery("Device C", "40", { attributes: { battery_count: false } }),
+            createBattery("Device D", "20", { attributes: { battery_count: "" } }),
+        ];
+        const collection = toCollection(batteries);
+        const sortedIds = batteries.map(b => b.entityId!);
+
+        const result = getBatteryGroups(collection, sortedIds, [
+            { name: "Count: {count(attributes.battery_count)}", min: 0, max: 100 },
+        ], {});
+
+        expect(result.groups[0].title).toBe("Count: 1");
     });
 
     test("{range(attributes.battery_count)} shows range of a custom attribute", () => {
