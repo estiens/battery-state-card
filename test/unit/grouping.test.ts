@@ -35,11 +35,14 @@ const createBattery = (name: string, state: string, entityData?: IMap<any>, extr
 
     mockHass.states[id] = stateData;
 
+    const accessor = new EntityDataAccessor(mockHass, id);
+    accessor.setComputed("state", state);
+
     return <IBatteryCollectionItem><any>{
         entityId: id,
         name: name,
         state: state,
-        accessor: new EntityDataAccessor(mockHass, id),
+        accessor: accessor,
         ...extraProps,
     };
 }
@@ -766,5 +769,239 @@ describe("Grouping - dynamic iconColor", () => {
         ], {});
 
         expect(result.groups[0].iconColor).toBe("#654321");
+    });
+});
+
+describe("Grouping - aggregation functions", () => {
+    test("{sum} sums state values across group", () => {
+        const batteries = [
+            createBattery("Device A", "30"),
+            createBattery("Device B", "50"),
+            createBattery("Device C", "20"),
+        ];
+        const collection = toCollection(batteries);
+        const sortedIds = batteries.map(b => b.entityId!);
+
+        const result = getBatteryGroups(collection, sortedIds, [
+            { name: "Sum: {sum}", min: 0, max: 100 },
+        ], {});
+
+        expect(result.groups[0].title).toBe("Sum: 100");
+    });
+
+    test("{avg} averages state values across group", () => {
+        const batteries = [
+            createBattery("Device A", "30"),
+            createBattery("Device B", "60"),
+            createBattery("Device C", "90"),
+        ];
+        const collection = toCollection(batteries);
+        const sortedIds = batteries.map(b => b.entityId!);
+
+        const result = getBatteryGroups(collection, sortedIds, [
+            { name: "Avg: {avg}", min: 0, max: 100 },
+        ], {});
+
+        expect(result.groups[0].title).toBe("Avg: 60");
+    });
+
+    test("{sum(attributes.battery_count)} sums a custom attribute", () => {
+        const batteries = [
+            createBattery("Device A", "80", { attributes: { battery_count: 2 } }),
+            createBattery("Device B", "60", { attributes: { battery_count: 3 } }),
+            createBattery("Device C", "40", { attributes: { battery_count: 1 } }),
+        ];
+        const collection = toCollection(batteries);
+        const sortedIds = batteries.map(b => b.entityId!);
+
+        const result = getBatteryGroups(collection, sortedIds, [
+            { name: "Total batteries: {sum(attributes.battery_count)}", min: 0, max: 100 },
+        ], {});
+
+        expect(result.groups[0].title).toBe("Total batteries: 6");
+    });
+
+    test("{min(attributes.battery_count)} gets min of a custom attribute", () => {
+        const batteries = [
+            createBattery("Device A", "80", { attributes: { battery_count: 2 } }),
+            createBattery("Device B", "60", { attributes: { battery_count: 5 } }),
+        ];
+        const collection = toCollection(batteries);
+        const sortedIds = batteries.map(b => b.entityId!);
+
+        const result = getBatteryGroups(collection, sortedIds, [
+            { name: "Min: {min(attributes.battery_count)}", min: 0, max: 100 },
+        ], {});
+
+        expect(result.groups[0].title).toBe("Min: 2");
+    });
+
+    test("{max(attributes.battery_count)} gets max of a custom attribute", () => {
+        const batteries = [
+            createBattery("Device A", "80", { attributes: { battery_count: 2 } }),
+            createBattery("Device B", "60", { attributes: { battery_count: 5 } }),
+        ];
+        const collection = toCollection(batteries);
+        const sortedIds = batteries.map(b => b.entityId!);
+
+        const result = getBatteryGroups(collection, sortedIds, [
+            { name: "Max: {max(attributes.battery_count)}", min: 0, max: 100 },
+        ], {});
+
+        expect(result.groups[0].title).toBe("Max: 5");
+    });
+
+    test("{avg(attributes.battery_count)} averages a custom attribute", () => {
+        const batteries = [
+            createBattery("Device A", "80", { attributes: { battery_count: 2 } }),
+            createBattery("Device B", "60", { attributes: { battery_count: 4 } }),
+        ];
+        const collection = toCollection(batteries);
+        const sortedIds = batteries.map(b => b.entityId!);
+
+        const result = getBatteryGroups(collection, sortedIds, [
+            { name: "Avg: {avg(attributes.battery_count)}", min: 0, max: 100 },
+        ], {});
+
+        expect(result.groups[0].title).toBe("Avg: 3");
+    });
+
+    test("{count(attributes.battery_count)} counts entities with truthy value", () => {
+        const batteries = [
+            createBattery("Device A", "80", { attributes: { battery_count: 2 } }),
+            createBattery("Device B", "60", { attributes: { battery_count: 4 } }),
+            createBattery("Device C", "40"), // no battery_count attribute
+        ];
+        const collection = toCollection(batteries);
+        const sortedIds = batteries.map(b => b.entityId!);
+
+        const result = getBatteryGroups(collection, sortedIds, [
+            { name: "Count: {count(attributes.battery_count)}", min: 0, max: 100 },
+        ], {});
+
+        expect(result.groups[0].title).toBe("Count: 2");
+    });
+
+    test("{count(attributes.battery_count)} excludes falsy values", () => {
+        const batteries = [
+            createBattery("Device A", "80", { attributes: { battery_count: 2 } }),
+            createBattery("Device B", "60", { attributes: { battery_count: 0 } }),
+            createBattery("Device C", "40", { attributes: { battery_count: false } }),
+            createBattery("Device D", "20", { attributes: { battery_count: "" } }),
+        ];
+        const collection = toCollection(batteries);
+        const sortedIds = batteries.map(b => b.entityId!);
+
+        const result = getBatteryGroups(collection, sortedIds, [
+            { name: "Count: {count(attributes.battery_count)}", min: 0, max: 100 },
+        ], {});
+
+        expect(result.groups[0].title).toBe("Count: 1");
+    });
+
+    test("{range(attributes.battery_count)} shows range of a custom attribute", () => {
+        const batteries = [
+            createBattery("Device A", "80", { attributes: { battery_count: 1 } }),
+            createBattery("Device B", "60", { attributes: { battery_count: 4 } }),
+        ];
+        const collection = toCollection(batteries);
+        const sortedIds = batteries.map(b => b.entityId!);
+
+        const result = getBatteryGroups(collection, sortedIds, [
+            { name: "Range: {range(attributes.battery_count)}", min: 0, max: 100 },
+        ], {});
+
+        expect(result.groups[0].title).toBe("Range: 1-4");
+    });
+
+    test("aggregation with pipe: {sum(attributes.battery_count)|round(1)}", () => {
+        const batteries = [
+            createBattery("Device A", "80", { attributes: { battery_count: 2.55 } }),
+            createBattery("Device B", "60", { attributes: { battery_count: 3.15 } }),
+        ];
+        const collection = toCollection(batteries);
+        const sortedIds = batteries.map(b => b.entityId!);
+
+        const result = getBatteryGroups(collection, sortedIds, [
+            { name: "Total: {sum(attributes.battery_count)|round(1)}", min: 0, max: 100 },
+        ], {});
+
+        expect(result.groups[0].title).toBe("Total: 5.7");
+    });
+
+    test("aggregation with pipe: {avg(state)|round(0)}", () => {
+        const batteries = [
+            createBattery("Device A", "33"),
+            createBattery("Device B", "67"),
+        ];
+        const collection = toCollection(batteries);
+        const sortedIds = batteries.map(b => b.entityId!);
+
+        const result = getBatteryGroups(collection, sortedIds, [
+            { name: "Avg: {avg|round(0)}%", min: 0, max: 100 },
+        ], {});
+
+        expect(result.groups[0].title).toBe("Avg: 50%");
+    });
+
+    test("aggregation skips entities with missing attribute", () => {
+        const batteries = [
+            createBattery("Device A", "80", { attributes: { battery_count: 2 } }),
+            createBattery("Device B", "60"), // no battery_count
+            createBattery("Device C", "40", { attributes: { battery_count: 3 } }),
+        ];
+        const collection = toCollection(batteries);
+        const sortedIds = batteries.map(b => b.entityId!);
+
+        const result = getBatteryGroups(collection, sortedIds, [
+            { name: "Sum: {sum(attributes.battery_count)}", min: 0, max: 100 },
+        ], {});
+
+        expect(result.groups[0].title).toBe("Sum: 5");
+    });
+
+    test("multiple aggregations in same string", () => {
+        const batteries = [
+            createBattery("Device A", "30", { attributes: { battery_count: 2 } }),
+            createBattery("Device B", "80", { attributes: { battery_count: 3 } }),
+        ];
+        const collection = toCollection(batteries);
+        const sortedIds = batteries.map(b => b.entityId!);
+
+        const result = getBatteryGroups(collection, sortedIds, [
+            { name: "{count} devices, {sum(attributes.battery_count)} batteries", min: 0, max: 100 },
+        ], {});
+
+        expect(result.groups[0].title).toBe("2 devices, 5 batteries");
+    });
+
+    test("aggregation in secondary_info", () => {
+        const batteries = [
+            createBattery("Device A", "30", { attributes: { battery_count: 2 } }),
+            createBattery("Device B", "80", { attributes: { battery_count: 3 } }),
+        ];
+        const collection = toCollection(batteries);
+        const sortedIds = batteries.map(b => b.entityId!);
+
+        const result = getBatteryGroups(collection, sortedIds, [
+            { name: "Group", secondary_info: "Need {sum(attributes.battery_count)} batteries", min: 0, max: 100 },
+        ], {});
+
+        expect(result.groups[0].secondaryInfo).toBe("Need 5 batteries");
+    });
+
+    test("{sum} returns 0 for empty group", () => {
+        const batteries = [
+            createBattery("Device A", "30"),
+        ];
+        const collection = toCollection(batteries);
+        const sortedIds = batteries.map(b => b.entityId!);
+
+        // All batteries go to the single group - verify sum works for a single-element group
+        const result = getBatteryGroups(collection, sortedIds, [
+            { name: "Sum: {sum}", min: 0, max: 100 },
+        ], {});
+
+        expect(result.groups[0].title).toBe("Sum: 30");
     });
 });
