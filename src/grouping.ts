@@ -1,6 +1,8 @@
 import { log, toNumber } from "./utils";
 import { IBatteryCollection, IBatteryCollectionItem } from "./battery-provider";
 import { createFilter, Filter } from "./filter";
+import { RichStringProcessor } from "./rich-string-processor";
+import { applyKStringProcessors } from "./rich-string-processor";
 
 export interface IBatteryGroup {
     title?: string;
@@ -211,24 +213,85 @@ const createGroup = (haGroupData: IGroupDataMap, batteryIds: string[], config?: 
  * @param group Battery group view data
  */
 const getEnrichedText = (text: string, group: IBatteryGroup, batteries: IBatteryCollection): string => {
-    text = text.replace(/\{[a-z]+\}/g, keyword => {
-        switch (keyword) {
-            case "{min}":
-                return group.batteryIds.reduce((agg, id) => agg > toNumber(batteries[id].state) ? toNumber(batteries[id].state) : agg, 100).toString();
-            case "{max}":
-                return group.batteryIds.reduce((agg, id) => agg < toNumber(batteries[id].state) ? toNumber(batteries[id].state) : agg, 0).toString();
-            case "{count}":
-                return group.batteryIds.length.toString();
-            case "{range}":
-                const min = group.batteryIds.reduce((agg, id) => agg > toNumber(batteries[id].state) ? toNumber(batteries[id].state) : agg, 100).toString();
-                const max = group.batteryIds.reduce((agg, id) => agg < toNumber(batteries[id].state) ? toNumber(batteries[id].state) : agg, 0).toString();
-                return min == max ? min : min + "-" + max;
-            default:
-                return keyword;
-        }
-    });
+    return text.replace(/\{([^}]+)\}/g, (match, content: string) => {
+        // Split on | to separate aggregation expression from optional pipes
+        const parts = content.split("|");
+        const mainExpr = parts[0];
+        const pipes = parts.slice(1);
 
-    return text;
+        // Check if it's a function call like sum(path)
+        const funcMatch = aggCallPattern.exec(mainExpr);
+        const funcName = funcMatch ? funcMatch[1] : mainExpr;
+        const dataPath = funcMatch ? (funcMatch[2] || "computed.state") : "computed.state";
+
+        let result = resolveAggregation(funcName, dataPath, group, batteries);
+        if (result === undefined) {
+            return match; // Unknown keyword, return as-is
+        }
+
+        if (pipes.length > 0) {
+            result = applyKStringProcessors(result, pipes);
+        }
+
+        return result;
+    });
+}
+
+const aggCallPattern = /^([a-z]+)\(([^)]*)\)$/;
+
+/**
+ * Collects numeric values for a given data path from all entities in a group.
+ */
+const collectNumericValues = (dataPath: string, group: IBatteryGroup, batteries: IBatteryCollection): number[] => {
+    return group.batteryIds
+        .map(id => {
+            const val = batteries[id].accessor?.resolve(dataPath);
+            return val === undefined || val === null ? NaN : toNumber(val);
+        })
+        .filter(v => !isNaN(v));
+}
+
+/**
+ * Resolves aggregation function to a string value. Returns undefined for unknown functions.
+ */
+const resolveAggregation = (funcName: string, dataPath: string, group: IBatteryGroup, batteries: IBatteryCollection): string | undefined => {
+    switch (funcName) {
+        case "min": {
+            const values = collectNumericValues(dataPath, group, batteries);
+            return values.length ? Math.min(...values).toString() : "0";
+        }
+        case "max": {
+            const values = collectNumericValues(dataPath, group, batteries);
+            return values.length ? Math.max(...values).toString() : "0";
+        }
+        case "sum": {
+            const values = collectNumericValues(dataPath, group, batteries);
+            return values.reduce((a, b) => a + b, 0).toString();
+        }
+        case "avg": {
+            const values = collectNumericValues(dataPath, group, batteries);
+            return values.length ? (values.reduce((a, b) => a + b, 0) / values.length).toString() : "0";
+        }
+        case "count": {
+            if (dataPath === "computed.state") {
+                return group.batteryIds.length.toString();
+            }
+            const count = group.batteryIds.filter(id => {
+                const val = batteries[id].accessor?.resolve(dataPath);
+                return val !== undefined && val !== null && val !== "" && val !== false && val !== 0;
+            }).length;
+            return count.toString();
+        }
+        case "range": {
+            const values = collectNumericValues(dataPath, group, batteries);
+            if (!values.length) return "0";
+            const min = Math.min(...values).toString();
+            const max = Math.max(...values).toString();
+            return min === max ? min : min + "-" + max;
+        }
+        default:
+            return undefined;
+    }
 }
 
 const getIcon = (icon: string | undefined, batteryIdsInGroup: string[], batteries: IBatteryCollection): string | undefined => {
@@ -248,6 +311,14 @@ const getIcon = (icon: string | undefined, batteryIdsInGroup: string[], batterie
             }
             else {
                 icon = undefined;
+            }
+            break;
+        default:
+            if (icon && icon.includes("{") && batteryIdsInGroup.length > 0) {
+                const accessor = batteries[batteryIdsInGroup[0]].accessor;
+                const processor = new RichStringProcessor(accessor);
+                const resolved = processor.process(icon);
+                icon = (resolved && resolved !== "null") ? resolved : undefined;
             }
             break;
     }

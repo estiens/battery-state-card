@@ -33,16 +33,11 @@ import { EntityDataAccessor } from "./entity-data-accessor";
             return defaultValue;
         }
 
-        const processors = processingDetails.map(command => {
-            const match = commandPattern.exec(command);
-            if (!match || !match.groups || !availableProcessors[match.groups.func]) {
-                return undefined;
-            }
+        if (processingDetails.length === 0) {
+            return value;
+        }
 
-            return availableProcessors[match.groups.func](match.groups.params);
-        });
-
-        const result = processors.filter(p => p !== undefined).reduce((res, proc) => proc!(res), value);
+        const result = applyKStringProcessors(value, processingDetails);
 
         return result === undefined ? defaultValue : result;
     }
@@ -180,6 +175,23 @@ const availableProcessors: IMap<IProcessorCtor> = {
             return `<rt>${val}</rt>`
         };
     }
+}
+
+/**
+ * Applies pipe processors to a value string.
+ * Reuses the same processors available in KString expressions.
+ */
+export const applyKStringProcessors = (value: string, pipes: string[]): string => {
+    const processors = pipes.map(command => {
+        const match = commandPattern.exec(command);
+        if (!match || !match.groups || !availableProcessors[match.groups.func]) {
+            return undefined;
+        }
+        return availableProcessors[match.groups.func](match.groups.params);
+    });
+
+    const result = processors.filter(p => p !== undefined).reduce((res, proc) => proc!(res), value);
+    return result === undefined ? "" : result;
 }
 
 interface IProcessor {
