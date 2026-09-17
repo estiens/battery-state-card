@@ -176,7 +176,7 @@ interface ISiblingEntity {
 type EntityName = string | EntityNameItem | EntityNameItem[];
 
 type EntityNameItem =
-    | { type: "entity" | "device" | "parent_device" | "area" | "floor" }
+    | { type: "entity" | "device" | "area" | "floor" }
     | { type: "text"; text: string };
 
 interface IBatteryEntityConfig {
